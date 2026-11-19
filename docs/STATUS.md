@@ -15,28 +15,28 @@ Updated 2026-11-19 by the hub session. ✅ = checked on disk · ⚠️ = not con
 Answered 2026-11-19 and written into `SPEC.md` (draft 3 change list, §2, §4, §6, §7):
 1. ✅ PIN fixed at `000000`; one-time "Your name" screen on first launch.
 2. ✅ Restore deceased by swipe left (Show inactive on) → green Restore + confirm; form link dropped.
-3. ✅ Build tasks go to **GitHub issues**. ⚠️ Pending: `git init` + repo creation need the user's explicit yes, repo name and visibility.
+3. ✅ Build tasks are GitHub issues #1–#27 on [jedt3d/BedRiddenPt](https://github.com/jedt3d/BedRiddenPt/issues) (public; git initialised, `main` pushed). The plan has 27 tasks, not 25. Each issue has a 'Done when' line and a 'Blocked by' line.
 
 ## Build plan (not started — needs user go-ahead)
 
 Order: 0 → 1, then 2/3/4/5 any order, then 6, then 7, then 8. Figma needed before Phase 2. Estimate ≈ 2 h 45 min (SPEC §9 still says 1 h 45 min).
 
-| Task | State |
+| Task (issue) | State |
 |---|---|
-| 0.1 `flutter create` CupertinoApp · 0.2 packages + assets in pubspec · 0.3 Info.plist | todo |
-| 1.1 open DB + schema + FK · 1.2 first-launch seed 5 random · 1.3 repository (incl. mark deceased/restore) · 1.4 reset keeps name | todo |
-| 2.1 one-time name screen · 2.2 PIN entry · 2.3 ⋮ Reset sample data on PIN screen | todo |
-| 3.1 rows · 3.2 search/filters · 3.3 Show inactive · 3.4 swipe deceased + swipe restore | todo |
-| 4.1 tiles + outline · 4.2 colored pins · 4.3 pin → detail · 4.4 legend + OSM attribution | todo |
-| 5.1 fields + BE dates + mini map · 5.2 Call/Navigate/Edit | todo |
-| 6.1 fields + pickers · 6.2 prefill from pool · 6.3 validation + duplicate block · 6.4 deceased read-only | todo |
-| 7.1 Use my location ±m · 7.2 photo pick + copy | todo |
-| 8 Simulator walkthrough | todo |
+| 0.1–0.3 setup (#1–#3) | todo |
+| 1.1–1.4 data (#4–#7) | todo |
+| 2.1–2.3 name / PIN / reset (#8–#10) | todo |
+| 3.1–3.4 list, incl. swipe deceased/restore (#11–#14) | todo |
+| 4.1–4.4 map (#15–#18) | todo |
+| 5.1–5.2 detail (#19–#20) | todo |
+| 6.1–6.4 form (#21–#24) | todo |
+| 7.1–7.2 location / photo (#25–#26) | todo |
+| 8 Simulator walkthrough (#27) | todo |
 
 ## Risks
 
 - Reset sample data on the PIN screen works without the PIN (accepted for prototype).
 - PIN is a constant `000000` in code; volunteer name in plain `shared_preferences` (SPEC §2, accepted).
-- No git repo: no history/rollback for the shared folder; several sessions write here.
+- Repo is **public**: everything pushed (sample pool, avatars) is world-readable. Several sessions write in the folder; only the hub commits so far.
 - OSM tiles need a real User-Agent; no bulk/offline download (SPEC §8).
 - `SPEC.md` §9 still says 1 h 45 min; the 25-task plan estimates 2 h 45 min.

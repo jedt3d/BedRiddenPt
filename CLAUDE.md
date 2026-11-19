@@ -6,7 +6,7 @@ Flutter prototype for recording bedridden patients in Khlong San district, Bangk
 
 ### Issue tracker
 
-GitHub Issues via the `gh` CLI. The GitHub repo isn't created yet, so publishing is blocked until it is. See `docs/agents/issue-tracker.md`.
+GitHub Issues via the `gh` CLI on `jedt3d/BedRiddenPt` (public). See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

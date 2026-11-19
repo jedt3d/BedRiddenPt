@@ -13,7 +13,7 @@ Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all o
 
 Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
 
-> **Setup pending (2026-11-19):** this folder is not a git repo yet and has no GitHub remote, so `gh issue` commands will fail until the repo is created and pushed. Until then, don't publish issues; tell the user instead.
+> Repo: [jedt3d/BedRiddenPt](https://github.com/jedt3d/BedRiddenPt) (public), remote `origin` over HTTPS. Build-plan issues #1–#27 filed 2026-11-19.
 
 ## Pull requests as a triage surface
 
