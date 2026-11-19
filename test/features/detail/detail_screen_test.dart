@@ -1,15 +1,20 @@
-// Detail (#19, SPEC §7.4): all fields, Buddhist-era dates, mini map.
+// Detail (SPEC §7.4): #19 all fields, Buddhist-era dates, mini map;
+// #20 Call / Navigate / Edit.
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:bedridden_pt/app/app_scope.dart';
 import 'package:bedridden_pt/data/patient.dart';
 import 'package:bedridden_pt/data/patient_repository.dart';
 import 'package:bedridden_pt/data/volunteer_store.dart';
+import 'package:bedridden_pt/app/routes.dart';
+import 'package:bedridden_pt/features/form/patient_form_screen.dart';
+import 'package:bedridden_pt/features/detail/detail_actions.dart';
 import 'package:bedridden_pt/features/detail/detail_format.dart';
 import 'package:bedridden_pt/features/detail/detail_mini_map.dart';
 import 'package:bedridden_pt/features/detail/detail_screen.dart';
@@ -27,7 +32,20 @@ void main() {
   tearDown(() {
     detailClock = DateTime.now;
     miniMapShowTiles = true;
+    detailLaunchUrl = (uri, mode) => launchUrl(uri, mode: mode);
   });
+
+  /// Records launched URLs instead of opening them; returns [result].
+  List<(Uri, LaunchMode)> fakeLauncher({bool result = true}) {
+    final launched = <(Uri, LaunchMode)>[];
+    detailLaunchUrl = (uri, mode) async {
+      launched.add((uri, mode));
+      return result;
+    };
+    return launched;
+  }
+
+  Finder button(String label) => find.widgetWithText(CupertinoButton, label);
 
   /// A seeded repository whose first patient is changed by [edit].
   Future<(PatientRepository, Patient)> seeded(
@@ -59,7 +77,10 @@ void main() {
         patients: repo,
         volunteer: volunteer,
         showInactive: showInactive,
-        child: CupertinoApp(home: DetailScreen(patientId: id)),
+        child: CupertinoApp(
+          home: DetailScreen(patientId: id),
+          onGenerateRoute: Routes.onGenerateRoute,
+        ),
       ),
     );
     await settle(tester);
@@ -155,6 +176,83 @@ void main() {
     );
     await settle(tester);
     expect(find.text('Renamed Person'), findsWidgets);
+  });
+
+  testWidgets('Call dials Phone 1 with tel:', (tester) async {
+    final launched = fakeLauncher();
+    final (repo, p) = await seeded(
+      tester,
+      (p) => p.copyWith(phones: ['0637592951', '0812345678']),
+    );
+    await pumpDetail(tester, repo, p.id);
+
+    await tester.tap(button('Call'));
+    await tester.pump();
+    expect(launched, [
+      (Uri.parse('tel:0637592951'), LaunchMode.platformDefault),
+    ]);
+  });
+
+  testWidgets('Call is disabled with no phone number', (tester) async {
+    final launched = fakeLauncher();
+    final (repo, p) = await seeded(tester, (p) => p.copyWith(phones: []));
+    await pumpDetail(tester, repo, p.id);
+
+    expect(tester.widget<CupertinoButton>(button('Call')).onPressed, isNull);
+    await tester.tap(button('Call'), warnIfMissed: false);
+    await tester.pump();
+    expect(launched, isEmpty);
+    expect(tester.widget<CupertinoButton>(button('Navigate')).enabled, isTrue);
+  });
+
+  testWidgets('Navigate opens Apple Maps at the patient, outside the app', (
+    tester,
+  ) async {
+    final launched = fakeLauncher();
+    final (repo, p) = await seeded(
+      tester,
+      (p) => p.copyWith(lat: 13.730103, lng: 100.498575),
+    );
+    await pumpDetail(tester, repo, p.id);
+
+    await tester.tap(button('Navigate'));
+    await tester.pump();
+    expect(launched, [
+      (
+        Uri.parse('https://maps.apple.com/?daddr=13.730103%2C100.498575'),
+        LaunchMode.externalApplication,
+      ),
+    ]);
+  });
+
+  testWidgets('a URL that cannot open shows an alert', (tester) async {
+    fakeLauncher(result: false);
+    final (repo, p) = await seeded(tester);
+    await pumpDetail(tester, repo, p.id);
+
+    await tester.tap(button('Navigate'));
+    await tester.pumpAndSettle();
+    expect(find.text("Can't open Maps on this device."), findsOneWidget);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.byType(CupertinoAlertDialog), findsNothing);
+  });
+
+  testWidgets('the single Edit button opens the form for this patient', (
+    tester,
+  ) async {
+    final (repo, p) = await seeded(tester);
+    await pumpDetail(tester, repo, p.id);
+
+    expect(button('Edit'), findsOneWidget);
+    await tester.tap(button('Edit'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<PatientFormScreen>(find.byType(PatientFormScreen))
+          .patientId,
+      p.id,
+    );
   });
 
   test('formats', () {

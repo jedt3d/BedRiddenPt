@@ -8,6 +8,7 @@ import '../../shared/labels.dart';
 import '../../shared/national_id.dart';
 import '../../shared/patient_avatar.dart';
 import '../../theme/tokens.dart';
+import 'detail_actions.dart';
 import 'detail_format.dart';
 import 'detail_mini_map.dart';
 
@@ -15,8 +16,9 @@ import 'detail_mini_map.dart';
 const _photoSize = 104.0;
 
 /// Patient detail (SPEC §7.4, Figma frames 17–18), pushed on the root
-/// navigator (no tab bar): all fields, dates in the Buddhist era and a small
-/// map with the patient's pin. Reloads after every repository change.
+/// navigator (no tab bar): all fields, dates in the Buddhist era, a small map
+/// with the patient's pin, and Call / Navigate / Edit ([DetailActions]).
+/// Reloads after every repository change.
 class DetailScreen extends StatefulWidget {
   const DetailScreen({super.key, required this.patientId});
 
@@ -91,6 +93,7 @@ class _DetailBody extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpace.s30),
       children: [
         _Header(patient: p),
+        DetailActions(patient: p),
         CupertinoListSection.insetGrouped(
           header: const Text('LOCATION'),
           children: [DetailMiniMap(patient: p)],
