@@ -147,21 +147,60 @@ class FieldText extends StatelessWidget {
   }
 }
 
-/// Reformats the text with [format] and puts the cursor at the end.
+/// Reformats digit input with [format] (e.g. 3-XXXX-XXXXX-XX-X) on every
+/// edit. The cursor stays after the same number of digits, so editing in the
+/// middle works, and a backspace that would only remove a separator removes
+/// the digit before it instead (else the formatter puts the dash straight
+/// back and the backspace does nothing).
 class ReformatInput extends TextInputFormatter {
   ReformatInput(this.format);
 
   final String Function(String) format;
+
+  static final _nonDigit = RegExp(r'[^0-9]');
+
+  static bool _isDigit(String c) =>
+      c.compareTo('0') >= 0 && c.compareTo('9') <= 0;
 
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final text = format(newValue.text);
+    var text = newValue.text;
+    final selection = newValue.selection;
+    var cursor = selection.isValid ? selection.extentOffset : text.length;
+    final onlySeparatorRemoved =
+        selection.isCollapsed &&
+        text.length == oldValue.text.length - 1 &&
+        text.replaceAll(_nonDigit, '') ==
+            oldValue.text.replaceAll(_nonDigit, '');
+    if (onlySeparatorRemoved) {
+      var i = cursor - 1;
+      while (i >= 0 && !_isDigit(text[i])) {
+        i--;
+      }
+      if (i >= 0) {
+        text = text.substring(0, i) + text.substring(i + 1);
+        cursor = i;
+      }
+    }
+    final digitsBefore = text
+        .substring(0, cursor.clamp(0, text.length))
+        .replaceAll(_nonDigit, '')
+        .length;
+    final formatted = format(text);
+    var offset = 0;
+    var seen = 0;
+    for (var i = 0; i < formatted.length && seen < digitsBefore; i++) {
+      if (_isDigit(formatted[i])) {
+        seen++;
+        offset = i + 1;
+      }
+    }
     return TextEditingValue(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
+      text: formatted,
+      selection: TextSelection.collapsed(offset: offset),
     );
   }
 }
