@@ -8,6 +8,7 @@ import 'package:bedridden_pt/data/patient.dart';
 import 'package:bedridden_pt/features/form/form_draft.dart';
 import 'package:bedridden_pt/features/form/patient_form_screen.dart';
 import 'package:bedridden_pt/shared/labels.dart';
+import 'package:bedridden_pt/shared/national_id.dart';
 
 import '../../data/test_db.dart';
 import 'harness.dart';
@@ -38,10 +39,9 @@ void main() {
     expect(find.byType(PatientFormScreen), findsOneWidget);
     String textOf(String label) =>
         tester.widget<CupertinoTextField>(h.field(label)).controller!.text;
-    expect(
-      textOf('National ID'),
-      matches(RegExp(r'^\d-\d{4}-\d{5}-\d{2}-\d$')),
-    );
+    // Digits in the field; the 3-XXXX form is painted over it.
+    expect(textOf('National ID'), p.nationalId);
+    expect(find.text(formatNationalId(p.nationalId)), findsOneWidget);
     expect(textOf('Full name'), p.fullName);
     expect(textOf('Born (B.E.)'), '${p.birthYear + 543}');
     expect(find.text('(age ${2026 - p.birthYear})'), findsOneWidget);
@@ -113,8 +113,9 @@ void main() {
     await h.enter('Phone 1', '0812345678');
     expect(
       tester.widget<CupertinoTextField>(h.field('Phone 1')).controller!.text,
-      '081-234-5678',
+      '0812345678',
     );
+    expect(find.text('081-234-5678'), findsOneWidget);
     expect(find.text('Phone 2'), findsNothing);
     await h.tapVisible(find.text('+ Add phone'));
     await h.enter('Phone 2', '0898765432');

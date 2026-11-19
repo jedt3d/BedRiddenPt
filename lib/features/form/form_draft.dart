@@ -21,7 +21,7 @@ const khlongSanSubdistricts = [
 String subdistrictLabel(String name) =>
     name.replaceFirst(RegExp(r' Subdistrict$'), '');
 
-/// "092-835-7619" while typing up to 10 digits; non-digits are dropped.
+/// "092-835-7619" for up to 10 digits; non-digits are dropped.
 String formatPhoneInput(String input) {
   var d = input.replaceAll(RegExp(r'[^0-9]'), '');
   if (d.length > 10) d = d.substring(0, 10);
@@ -60,7 +60,7 @@ class FormDraft {
 
   /// Edit [p], or Add prefilled from a pool record [p].
   FormDraft.fromPatient(Patient p) : base = p {
-    nationalId.text = formatNationalId(p.nationalId);
+    nationalId.text = nationalIdDigits(p.nationalId);
     fullName.text = p.fullName;
     sex = p.sex;
     bornBE.text = '${p.birthYearBE}';
@@ -73,7 +73,7 @@ class FormDraft {
     contactName.text = p.contactName;
     relation = p.contactRelation;
     for (final phone in p.phones) {
-      phones.add(TextEditingController(text: formatPhoneInput(phone)));
+      phones.add(TextEditingController(text: phoneDigits(phone)));
     }
     if (phones.isEmpty) phones.add(TextEditingController());
     adlScore = p.adlScore;

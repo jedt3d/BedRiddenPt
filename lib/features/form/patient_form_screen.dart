@@ -332,14 +332,14 @@ class _FormBody extends StatelessWidget {
                 icon: CupertinoIcons.person_crop_rectangle,
                 label: 'National ID',
                 error: errors[DraftField.nationalId],
-                child: FieldText(
+                child: DigitsField(
                   controller: d.nationalId,
                   placeholder: '13 digits',
+                  maxDigits: 13,
+                  format: formatNationalId,
                   color: errors.containsKey(DraftField.nationalId)
                       ? AppColors.actionDestructive
                       : AppColors.labelPrimary,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [ReformatInput(formatNationalId)],
                 ),
               ),
               FieldRow(
@@ -495,11 +495,12 @@ class _FormBody extends StatelessWidget {
                   error: i == d.phones.length - 1
                       ? errors[DraftField.phones]
                       : null,
-                  child: FieldText(
+                  child: DigitsField(
                     controller: d.phones[i],
                     placeholder: '10 digits',
+                    maxDigits: 10,
+                    format: formatPhoneInput,
                     keyboardType: TextInputType.phone,
-                    inputFormatters: [ReformatInput(formatPhoneInput)],
                   ),
                 ),
               Align(

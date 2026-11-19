@@ -147,60 +147,102 @@ class FieldText extends StatelessWidget {
   }
 }
 
-/// Reformats digit input with [format] (e.g. 3-XXXX-XXXXX-XX-X) on every
-/// edit. The cursor stays after the same number of digits, so editing in the
-/// middle works, and a backspace that would only remove a separator removes
-/// the digit before it instead (else the formatter puts the dash straight
-/// back and the backspace does nothing).
-class ReformatInput extends TextInputFormatter {
-  ReformatInput(this.format);
+/// A digits-only field (national ID, phone). While focused it holds and
+/// shows only digits, with the grouped form as a caption under it; when not
+/// focused the grouped form is painted over it. The text iOS edits is never
+/// rewritten, so fast backspaces can't race a reformat (a formatter that
+/// adds dashes makes the framework send iOS a new state, which lands after
+/// later keystrokes and leaves stale digits behind).
+class DigitsField extends StatefulWidget {
+  const DigitsField({
+    super.key,
+    required this.controller,
+    required this.placeholder,
+    required this.maxDigits,
+    required this.format,
+    this.keyboardType = TextInputType.number,
+    this.color = AppColors.labelPrimary,
+  });
 
+  final TextEditingController controller;
+  final String placeholder;
+  final int maxDigits;
+
+  /// "3-1015-79268-59-9" for "3101579268599".
   final String Function(String) format;
-
-  static final _nonDigit = RegExp(r'[^0-9]');
-
-  static bool _isDigit(String c) =>
-      c.compareTo('0') >= 0 && c.compareTo('9') <= 0;
+  final TextInputType keyboardType;
+  final Color color;
 
   @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    var text = newValue.text;
-    final selection = newValue.selection;
-    var cursor = selection.isValid ? selection.extentOffset : text.length;
-    final onlySeparatorRemoved =
-        selection.isCollapsed &&
-        text.length == oldValue.text.length - 1 &&
-        text.replaceAll(_nonDigit, '') ==
-            oldValue.text.replaceAll(_nonDigit, '');
-    if (onlySeparatorRemoved) {
-      var i = cursor - 1;
-      while (i >= 0 && !_isDigit(text[i])) {
-        i--;
-      }
-      if (i >= 0) {
-        text = text.substring(0, i) + text.substring(i + 1);
-        cursor = i;
-      }
-    }
-    final digitsBefore = text
-        .substring(0, cursor.clamp(0, text.length))
-        .replaceAll(_nonDigit, '')
-        .length;
-    final formatted = format(text);
-    var offset = 0;
-    var seen = 0;
-    for (var i = 0; i < formatted.length && seen < digitsBefore; i++) {
-      if (_isDigit(formatted[i])) {
-        seen++;
-        offset = i + 1;
-      }
-    }
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: offset),
+  State<DigitsField> createState() => _DigitsFieldState();
+}
+
+class _DigitsFieldState extends State<DigitsField> {
+  final _focus = FocusNode();
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([widget.controller, _focus]),
+      builder: (context, _) {
+        final text = widget.controller.text;
+        final grouped = widget.format(text);
+        final focused = _focus.hasFocus;
+        final overlay = !focused && text.isNotEmpty;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              children: [
+                CupertinoTextField.borderless(
+                  controller: widget.controller,
+                  focusNode: _focus,
+                  placeholder: widget.placeholder,
+                  placeholderStyle: AppText.body.copyWith(
+                    color: AppColors.labelQuaternary,
+                  ),
+                  style: AppText.body.copyWith(
+                    color: overlay ? AppColors.transparent : widget.color,
+                  ),
+                  padding: EdgeInsets.zero,
+                  keyboardType: widget.keyboardType,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(widget.maxDigits),
+                  ],
+                ),
+                if (overlay)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          grouped,
+                          maxLines: 1,
+                          style: AppText.body.copyWith(color: widget.color),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            if (focused && text.isNotEmpty)
+              Text(
+                grouped,
+                style: AppText.footnote.copyWith(
+                  color: AppColors.labelSecondary,
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
