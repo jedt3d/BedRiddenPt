@@ -10,6 +10,7 @@ import '../../shared/patient_avatar.dart';
 import '../../theme/tokens.dart';
 import '../detail/detail_screen.dart' show CareLevelBadge;
 import 'form_draft.dart';
+import 'form_location.dart';
 import 'form_widgets.dart';
 
 /// Photo diameter (Figma frame 19 "Photo": 88).
@@ -50,6 +51,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   /// The national ID the repository rejected as a duplicate on Save.
   String? _duplicateId;
 
+  var _location = const _LocationState();
+
   /// The note at the top of Add (SPEC §6, §7.3); null for Edit.
   String? _banner;
 
@@ -89,6 +92,39 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   }
 
   void _changed() => setState(() {});
+
+  /// Use my location (SPEC §7.3): overwrites lat/lng and the accuracy, and
+  /// sets the subdistrict from its polygon. Outside the district the
+  /// subdistrict is left as it was and a note says so.
+  Future<void> _useMyLocation() async {
+    final draft = _draft!;
+    setState(() => _location = const _LocationState(locating: true));
+    try {
+      final fix = await formLocate();
+      final name = (await formSubdistricts()).nameAt(fix.lat, fix.lng);
+      if (!mounted) return;
+      setState(() {
+        draft
+          ..lat = fix.lat
+          ..lng = fix.lng
+          ..gpsAccuracyM = fix.accuracyM;
+        if (name != null) draft.subdistrict = name;
+        _location = _LocationState(
+          used: true,
+          message: name == null ? outsideDistrictMessage : null,
+        );
+      });
+    } on LocationUnavailable catch (e) {
+      if (mounted) {
+        setState(
+          () => _location = _LocationState(
+            used: _location.used,
+            message: e.message,
+          ),
+        );
+      }
+    }
+  }
 
   /// Field messages to show: none until the first Save, then live.
   Map<DraftField, String> _errors() {
@@ -181,6 +217,8 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                 isAdd: _isAdd,
                 banner: _banner,
                 errors: _errors(),
+                location: _location,
+                onUseLocation: _useMyLocation,
                 onChanged: _changed,
               ),
       ),
@@ -194,6 +232,8 @@ class _FormBody extends StatelessWidget {
     required this.isAdd,
     required this.banner,
     required this.errors,
+    required this.location,
+    required this.onUseLocation,
     required this.onChanged,
   });
 
@@ -201,6 +241,8 @@ class _FormBody extends StatelessWidget {
   final bool isAdd;
   final String? banner;
   final Map<DraftField, String> errors;
+  final _LocationState location;
+  final VoidCallback onUseLocation;
 
   /// Rebuild after a non-text value changed.
   final VoidCallback onChanged;
@@ -315,8 +357,11 @@ class _FormBody extends StatelessWidget {
         ),
         CupertinoListSection.insetGrouped(
           header: const Text('LOCATION'),
-          footer: const Text(
-            'Stand at the patient’s home and tap Use my location.',
+          footer: Text(
+            location.used
+                ? 'Use my location replaced the '
+                      '${isAdd ? 'prefilled' : 'saved'} coordinates.'
+                : 'Stand at the patient’s home and tap Use my location.',
           ),
           children: [
             FieldRow(
@@ -361,6 +406,13 @@ class _FormBody extends StatelessWidget {
                       : AppColors.labelSecondary,
                 ),
               ),
+            ),
+            _UseMyLocationRow(
+              locating: location.locating,
+              accuracyM: d.lat == null ? null : d.gpsAccuracyM,
+              hasCoordinates: d.lat != null,
+              message: location.message,
+              onPressed: location.locating ? null : onUseLocation,
             ),
           ],
         ),
@@ -602,6 +654,140 @@ class _FormBody extends StatelessWidget {
             ],
           ),
       ],
+    );
+  }
+}
+
+/// Shown when Use my location lands outside every subdistrict (SPEC §7.3).
+const outsideDistrictMessage = 'Outside Khlong San district';
+
+/// Progress and outcome of Use my location.
+class _LocationState {
+  const _LocationState({
+    this.locating = false,
+    this.used = false,
+    this.message,
+  });
+
+  final bool locating;
+
+  /// Whether a fix replaced the coordinates on this form.
+  final bool used;
+
+  /// "Outside Khlong San district", or why there's no fix.
+  final String? message;
+}
+
+/// "➤ Use my location" with the accuracy pill (Figma frames 19, 25).
+class _UseMyLocationRow extends StatelessWidget {
+  const _UseMyLocationRow({
+    required this.locating,
+    required this.accuracyM,
+    required this.hasCoordinates,
+    required this.message,
+    required this.onPressed,
+  });
+
+  final bool locating;
+  final double? accuracyM;
+  final bool hasCoordinates;
+  final String? message;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final acc = accuracyM;
+    final color = onPressed == null
+        ? AppColors.labelQuaternary
+        : AppColors.accent;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpace.s16,
+        vertical: AppSpace.s8,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Semantics(
+                  button: true,
+                  enabled: onPressed != null,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onPressed,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpace.s4,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            CupertinoIcons.location_fill,
+                            size: AppSpace.s20,
+                            color: color,
+                          ),
+                          const SizedBox(width: AppSpace.s12),
+                          Flexible(
+                            child: Text(
+                              'Use my location',
+                              style: AppText.body.copyWith(color: color),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              if (locating)
+                const CupertinoActivityIndicator()
+              else if (hasCoordinates)
+                _AccuracyPill(
+                  text: acc == null ? 'Not recorded' : accuracyText(acc),
+                  good: acc != null,
+                ),
+            ],
+          ),
+          if (message != null) FieldError(text: message!),
+        ],
+      ),
+    );
+  }
+}
+
+class _AccuracyPill extends StatelessWidget {
+  const _AccuracyPill({required this.text, required this.good});
+
+  final String text;
+  final bool good;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: good
+            ? AppColors.careSocial.withValues(
+                alpha: AppColors.careSocialOpacityTintBg,
+              )
+            : AppColors.fillTertiary.withValues(
+                alpha: AppColors.fillTertiaryOpacity,
+              ),
+        borderRadius: BorderRadius.circular(AppRadius.full),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpace.s8,
+          vertical: AppSpace.s2,
+        ),
+        child: Text(
+          text,
+          style: AppText.footnoteEmphasized.copyWith(
+            color: good ? AppColors.careSocialText : AppColors.labelSecondary,
+          ),
+        ),
+      ),
     );
   }
 }
