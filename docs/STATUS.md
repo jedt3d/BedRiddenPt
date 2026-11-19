@@ -1,6 +1,6 @@
 # Status — BedRiddenPt
 
-Updated 2026-11-19 by the hub session. ✅ = checked on disk · ⚠️ = not confirmed / mismatch.
+Updated 2026-11-19 (end of day) by the hub session. **Build complete:** issues #1–#28 closed, 39 of 41 PRs merged (#30/#32 replaced by #38/#39), walkthrough #27 passed. Open: #69 (tokens v2), left for a later day. ✅ = checked on disk · ⚠️ = not confirmed / mismatch.
 
 ## Sessions
 
@@ -25,20 +25,20 @@ The user adopted figma-proto's 15 design decisions plus: "Use my location" also 
 
 ## Build streams (started 2026-11-19, plan approved by the user)
 
-Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; reviews and merges PRs with `gh pr merge --squash --auto` after the Done-when check). Merge rule for stacked PRs: retarget the next PR to `main` before merging, merge commits, delete branches only at the end (`--delete-branch` on #29 closed #30/#32). Main session (`local_78971f4d-…`) reports to the user every 15 min while workers run. Workers: Opus 5.5 / medium, own worktree, one PR per issue. Expert (`local_08d17d04-48b6-4415-be2b-997a359bfb43`, plan mode, read-only; user switches it to Fable 5.2 / high) is consulted after 3 different failed attempts, or at once for Xcode/Pods/signing.
+Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; reviews each PR against its Done-when, brings it up to date, waits for CI, merges with a merge commit, then checks main's CI). Merge rule for stacked PRs: retarget the next PR to `main` before merging, merge commits, delete branches only at the end (`--delete-branch` on #29 closed #30/#32). Main session (`local_78971f4d-…`) reports to the user every 15 min while workers run. Workers: Opus 5.5 / medium, own worktree, one PR per issue. Expert (`local_08d17d04-48b6-4415-be2b-997a359bfb43`, plan mode, read-only; user switches it to Fable 5.2 / high) is consulted after 3 different failed attempts, or at once for Xcode/Pods/signing.
 
 | Stream | Issues | Session | State |
 |---|---|---|---|
-| A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | **merged** (#29, #38, #39, #33–#37, #40 review fixes); issues #1–#7, #28 closed; branches deleted. Pending: Simulator check on a fresh install (5 active seeded, relaunch same ids, name → PIN → Home) |
+| A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | **merged** (#29, #38, #39, #33–#37, #40 review fixes); issues #1–#7, #28 closed; branches deleted. Fresh-install seeding checked in the #27 walkthrough |
 | Expert review | #6 repository, #28 tokens, shell | expert | done, fixes merged in #40: no blockers; 2 high + 6 medium + token fixes sent to stream A as one fix PR (shared `lib/shared/`, `lib/geo/`, repository guards). Hub decision: seed/prefill from active pool only (SPEC §6) |
-| B1 Launch | #8 #9 #10 | `local_30dee9da-0a6c-4d7f-88c0-272ca65919a1` | code complete: #41 #43 #46 merged; **holds the Simulator** |
+| B1 Launch | #8 #9 #10 | `local_30dee9da-0a6c-4d7f-88c0-272ca65919a1` | **done**: #41 #43 #46 merged; Simulator check passed |
 | B2 List | #11–#14 | `local_c986f8ba-c4b0-4f23-9746-192822d2efd1` | **done**: #42 #48 #49 #52 #55 #65 merged; Simulator check passed (tab-bar overlap fixed in #65) |
 | B3 Map | #15 #16 #18, then #17 after #19 | `local_7bc2fad5-26bd-492c-bebe-db9f81c515f6` | **done**: #44 #50 #51 #53 #63 merged; Simulator check passed (fit fix in #63) |
 | B4 Detail | #19 #20 | `local_6ae3d0a3-a60e-402e-a4f9-6b3926fa0e8c` | **done**: #45 #47 #54 merged; Simulator check done (tiles, fields, Navigate OK; Call alert expected on Simulator) |
-| C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | **done**: #56 #57 #59 #60 #61 #62 merged (#21–#26 closed); Simulator checks passed |
-| E Walkthrough | #27 | `local_1fbb5e06-c23e-480f-a9e6-4d98b9715191` | re-run on a071a83: callout fixes (#67, #68) pass; **formatted-field fast backspace still fails** (hidden digits after a fast clear; a lost keypress next to a dash) → stream C + expert. [Re-run comment](https://github.com/jedt3d/BedRiddenPt/issues/27#issuecomment-7009912638) |
+| C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | **done**: #56 #57 #59 #60 #61 #62 merged (#21–#26 closed), then #66 and #70 (digits-only National ID and phone, after the expert traced an iOS text-sync race); Simulator checks passed |
+| E Walkthrough | #27 | `local_1fbb5e06-c23e-480f-a9e6-4d98b9715191` | **done**: #27 closed. Callout fixes (#67, #68) passed on a071a83; formatted fields passed on 5c77f2a after #70, including holding ⌫ on the on-screen keyboard ([final re-run](https://github.com/jedt3d/BedRiddenPt/issues/27#issuecomment-7014045495)). Not tried on real hardware |
 
-## Build plan (issue list) — 27 of 28 closed
+## Build plan (issue list) — 28 of 28 closed
 
 Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 8. Figma needed before Phase 2. 
 
@@ -53,7 +53,7 @@ Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 
 | 5.1–5.2 detail (#19–#20) | ✅ closed (#45, #47, + fixes #54, #58); Simulator check done |
 | 6.1–6.4 form (#21–#24) | ✅ closed (#56, #57, #59, #60) |
 | 7.1–7.2 location / photo (#25–#26) | #25 ✅ closed (#61, Simulator ±5 m + Khlong Ton Sai verified); #26 ✅ closed (#62, Simulator pass; 2 UI fixes included, visual re-check in #27) |
-| 8 Simulator walkthrough (#27) | open: callout fixed (#67, #68, verified); National ID/phone fast-backspace bug on device (#66 not enough) → stream C + expert, then re-run |
+| 8 Simulator walkthrough (#27) | ✅ closed: callout fixed (#67, #68); National ID/phone fast backspace fixed (#66, #70); re-run passed |
 
 Hub rule: this table is regenerated from GitHub whenever a PR is merged.
 
@@ -66,7 +66,7 @@ Red from #45 to #54: the Detail header Row overflowed at phone width and the Lis
 - ✅ Done in #64: back button reads "< Patients" / "< Patient"; `CareLevelBadge` moved to `lib/shared/`; `placeholder_body.dart` deleted.
 - ✅ #63 (B3 Simulator finding): the Map tab fits the district outline (SPEC §2 updated).
 - ✅ `main` protected 2026-11-19 (user's OK): required check `check`, branch must be up to date; admins not enforced (hub STATUS commits go direct).
-- Simulator: B3 (callout fix). Walkthrough results: callout clip → B3; national ID rapid-backspace → C investigates with tests; accepted as is: Edit Cancel/Save (Figma), ADL caption wording (Figma 23), Done-only relationship picker (iOS convention).
+- ✅ Walkthrough findings: callout clip fixed (#67, #68); National ID/phone fast backspace fixed (#70; SPEC §7.3 now: typed as digits, dashed when not editing). Accepted as is: Edit Cancel/Save (Figma), ADL caption wording (Figma 23), Done-only relationship picker (iOS convention).
 
 ## Token gaps (logged, not blocking)
 
@@ -78,4 +78,4 @@ Red from #45 to #54: the Detail header Row overflowed at phone width and the Lis
 - PIN is a constant `000000` in code; volunteer name in plain `shared_preferences` (SPEC §2, accepted).
 - Repo is **public**: everything pushed (sample pool, avatars) is world-readable. OSM-derived `assets/geo/` is ODbL; attribution is in its README and all 4 files (checked). Several sessions write in the folder; only the hub commits so far.
 - OSM tiles need a real User-Agent; no bulk/offline download (SPEC §8).
-- `SPEC.md` §9 still says 1 h 45 min; the 25-task plan estimates 2 h 45 min.
+- National ID/phone: a 14th digit or `+ * #` still makes the field drop a character (one text rewrite, so a fast ⌫ right after it could in theory still race; not reproduced). A tap on an unfocused field can put the caret a character off (SPEC §10).

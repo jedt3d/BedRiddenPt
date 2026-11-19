@@ -56,7 +56,7 @@ It writes `index.html` and `data.json` to the output folder and prints the confi
 | Dependency lines | A line `Blocked by: #A, #B` in the issue description, the shape the `to-tickets` skill writes and that issues #1–#28 here use |
 | Streams | A `streams` list in the project config, or GitHub milestones |
 
-PRs with no `Closes #N` appear under "Pull requests without an issue". In this repo those are the hub's cleanup (#64) and the post-walkthrough fixes (#54, #58, #63, #65–#68).
+PRs with no `Closes #N` appear under "Pull requests without an issue". In this repo those are the hub's cleanup (#64) and the post-walkthrough fixes (#54, #58, #63, #65–#68, #70).
 
 ## Project config
 

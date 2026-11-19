@@ -228,7 +228,7 @@ The plan became 28 GitHub issues, each with "Done when" and "Blocked by" lines. 
 | C Form | #21–#26 | Fields, pool prefill, validation, deceased lock, Use my location, photo |
 | E Walkthrough | #27 | Every screen on the iOS Simulator against §6–§7 and Figma |
 
-The plan estimated 1 h 45 min (later 2 h 45 min). Actual: first PR 17:16, all features merged by about 19:06, last fix merged 19:52 (ICT). That's 40 PRs, 38 merged; #30 and #32 were closed by a hub merge mistake and replaced by #38 and #39. Per-screen Simulator checks and the walkthrough found the fixes in #54, #58, #63, #65 and #66–#68.
+The plan estimated 1 h 45 min (later 2 h 45 min). Actual: first PR 17:16, all features merged by about 19:06, last fix of the first pass merged 19:52 (ICT). After the walkthrough, the last fix (#70) merged at 22:34 and #27 closed at 22:44. That's 41 PRs, 39 merged; #30 and #32 were closed by a hub merge mistake and replaced by #38 and #39. Per-screen Simulator checks and the walkthrough found the fixes in #54, #58, #63, #65, #66–#68 and #70.
 
 ## 10. Open questions
 
@@ -238,4 +238,4 @@ None open. Previously:
 2. ~~Thai text in data~~ **Resolved:** romanize all sample text. Original question: the UI is English, but the sample names and notes are in Thai script. Keep them in Thai (realistic), or switch to romanized names?
 3. ~~District center and zoom~~ **Resolved:** center 13.7228, 100.5023, zoom 14.5 (§3); the Map tab then fits the district outline (§2, PR #63).
 
-**Known limits (accepted for the prototype):** the `birth_year` CHECK is fixed at 1916–1966, so from 2027 a 60-year-old is rejected (§5). Overlapping pins: the top one takes the tap until you zoom in. `tel:` doesn't work on the Simulator, which shows "Can't place a call on this device.". Reset sample data on the PIN screen works without the PIN. The volunteer name is stored without encryption.
+**Known limits (accepted for the prototype):** the `birth_year` CHECK is fixed at 1916–1966, so from 2027 a 60-year-old is rejected (§5). Overlapping pins: the top one takes the tap until you zoom in. `tel:` doesn't work on the Simulator, which shows "Can't place a call on this device.". Reset sample data on the PIN screen works without the PIN. The volunteer name is stored without encryption. In the National ID and phone fields, a 14th digit or `+ * #` is dropped by rewriting the text once, and a tap on the unfocused (dashed) field can place the caret a character off.

@@ -2,7 +2,7 @@
 
 Date: 2026-11-19 · Written by the main session. Sources: this session's own work and checks, the side sessions' reports, and GitHub issue and PR timestamps. The workers' and the expert's full transcripts were not read.
 
-**Status when written:** every feature is merged: 34 of 36 PRs and 27 of 28 issues. The final Simulator walkthrough (#27) has not run yet.
+**Status (end of day, updated by the hub):** build complete. All 28 issues closed; 39 of 41 PRs merged. The Simulator walkthrough (#27) found 2 bugs that unit tests missed (map callout clipping, fast backspace in formatted fields); both are fixed, and #27 closed at 22:44 ICT. Open: #69 (Figma tokens v2).
 
 ## Summary
 
@@ -37,6 +37,10 @@ Date: 2026-11-19 · Written by the main session. Sources: this session's own wor
 | 8 | 9 stacked PRs waited on #29's Simulator check | The foundation merged in a queue | Stacked PRs depend on the first one merging |
 | 9 | Sessions waited on the user for permissions, Simulator access and starting workers (a message-started turn can't start sessions) | Idle time | Approvals were asked for one at a time |
 | 10 | The hub decided on its own that only active pool patients are used for seeding (SPEC §6) | Fewer inactive patients in the demo | No rule for which decisions the hub may make on its own |
+| 11 | Merging stacked PR #29 with `--delete-branch` closed #30 and #32 | Two replacement PRs (#38, #39) | Deleting a base branch closes PRs stacked on it |
+| 12 | `main` went red from #45 to #54 (a header overflow at phone width) | Later merges sat on a red `main` | The hub didn't check `main`'s CI after each merge; tests didn't run at phone size |
+| 13 | Fast ⌫ in the National ID and phone fields lost keys on iOS, though unit tests passed (#66 wasn't enough) | Two fix PRs (#66, #70) and an expert consult | Rewriting text while the user types races iOS's own copy; only a fake-iOS-keyboard test reproduced it |
+| 14 | A worker staged with `git add -A` and swept in another session's files | A PR cleaned by hand | A folder shared by several sessions |
 
 ## Lessons for the next project
 
@@ -46,7 +50,10 @@ Date: 2026-11-19 · Written by the main session. Sources: this session's own wor
 4. **Freeze decisions before design.** Questions, then Figma, then building. A change after Figma should be a deliberate choice.
 5. **Check the environment before the build.** The `gh` account and scopes (including `workflow`), Simulator access, platform licences and package versions; about 5 minutes.
 6. **Approve in batches.** At build start, approve the plan's steps together (start streams, Simulator checks, merge after a passing check), and agree which product decisions the hub may make on its own.
-7. **Stack fewer PRs.** Merge the first PR as soon as it passes, so the rest don't queue behind it.
+7. **Stack fewer PRs.** Merge the first PR as soon as it passes, so the rest don't queue behind it. Retarget the next PR to `main` before merging its base, and delete branches only at the end.
+8. **Protect `main` from the start** (required CI, up to date), and check `main`'s CI after every merge.
+9. **Run widget tests at phone size** and test keyboard input with a fake platform keyboard; don't rewrite a text field's value while the user types.
+10. **Stage files by name** in any folder that several sessions share.
 
 ## Reusable assets
 
@@ -58,4 +65,4 @@ Date: 2026-11-19 · Written by the main session. Sources: this session's own wor
 
 - Built from the main session's view. Workers' build failures and retries may be missing or underweighted.
 - The cost in tokens and in user attention is not measured.
-- The end-to-end walkthrough (#27) is still pending.
+- The walkthrough used injected keys in the Simulator; holding ⌫ was not tried on real hardware.

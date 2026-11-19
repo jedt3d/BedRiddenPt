@@ -2,7 +2,7 @@
 
 A Flutter (Cupertino) prototype for volunteers in **Khlong San district, Bangkok**, who register elderly patients' home locations and care levels. It runs in the iOS Simulator. All data is on the device (SQLite); nothing is sent to a server. All sample patients are fictitious.
 
-**Status (2026-11-19):** build issues #1–#28 are merged on `main`. See [docs/STATUS.md](docs/STATUS.md).
+**Status (2026-11-19):** build complete. Issues #1–#28 are closed, and the Simulator walkthrough (#27) passed. Open: #69 (adopt Figma tokens v2). See [docs/STATUS.md](docs/STATUS.md).
 
 ## What it does
 
