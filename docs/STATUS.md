@@ -53,6 +53,6 @@ Order: 0 → 1, then 2/3/4/5 any order, then 6, then 7, then 8. Figma needed bef
 
 - Reset sample data on the PIN screen works without the PIN (accepted for prototype).
 - PIN is a constant `000000` in code; volunteer name in plain `shared_preferences` (SPEC §2, accepted).
-- Repo is **public**: everything pushed (sample pool, avatars) is world-readable. Several sessions write in the folder; only the hub commits so far.
+- Repo is **public**: everything pushed (sample pool, avatars) is world-readable. OSM-derived `assets/geo/` is ODbL; attribution is in its README and all 4 files (checked). Several sessions write in the folder; only the hub commits so far.
 - OSM tiles need a real User-Agent; no bulk/offline download (SPEC §8).
 - `SPEC.md` §9 still says 1 h 45 min; the 25-task plan estimates 2 h 45 min.
