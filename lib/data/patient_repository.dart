@@ -7,8 +7,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'app_database.dart';
 import 'patient.dart';
 
+const sampleSeedCount = 5;
 const samplePoolAsset = 'assets/bootstrap.json';
 
 /// `registered_by` of sample-pool records inserted by seeding or reset.
@@ -44,6 +46,31 @@ class PatientRepository extends ChangeNotifier {
   }) : pool = List.unmodifiable(pool),
        _random = random ?? Random(),
        _now = now ?? DateTime.now;
+
+  /// Opens the database and loads the pool. On the very first launch (the
+  /// database file was just created) it seeds [sampleSeedCount] patients;
+  /// after that the data persists. Arguments are for tests.
+  static Future<PatientRepository> open({
+    DatabaseFactory? factory,
+    String? path,
+    AssetBundle? bundle,
+    Random? random,
+    DateTime Function()? now,
+  }) async {
+    final opened = await openAppDatabase(
+      factory: factory,
+      path: path,
+      bundle: bundle,
+    );
+    final repo = PatientRepository(
+      opened.db,
+      pool: await loadSamplePool(bundle),
+      random: random,
+      now: now,
+    );
+    if (opened.created) await repo.seedSampleData();
+    return repo;
+  }
 
   final Database _db;
   final Random _random;
@@ -175,7 +202,21 @@ class PatientRepository extends ChangeNotifier {
   Future<void> restoreToActive(String id) =>
       _setStatus(id, PatientStatus.active);
 
+  /// First launch: inserts [sampleSeedCount] random pool records.
+  Future<void> seedSampleData() async {
+    await _db.transaction(_seed);
+    notifyListeners();
+  }
+
   // ---- internals ----
+
+  Future<void> _seed(Transaction txn) async {
+    final unused = await _unusedPool(txn)
+      ..shuffle(_random);
+    for (final p in unused.take(sampleSeedCount)) {
+      await _insert(txn, p, registeredBy: sampleRegisteredBy);
+    }
+  }
 
   Future<Patient> _insert(
     DatabaseExecutor txn,
