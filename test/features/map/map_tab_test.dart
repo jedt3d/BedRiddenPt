@@ -49,8 +49,15 @@ void main() {
     expect(done(), isTrue, reason: 'timed out');
   }
 
-  List<MapPin> pins(WidgetTester tester) =>
-      tester.widgetList<MapPin>(find.byType(MapPin)).toList();
+  /// The pins on the map (the legend swatches are MapPins too).
+  List<MapPin> pins(WidgetTester tester) => tester
+      .widgetList<MapPin>(
+        find.descendant(
+          of: find.byType(MarkerLayer),
+          matching: find.byType(MapPin),
+        ),
+      )
+      .toList();
 
   /// MapTab on a database seeded with the 5 sample patients.
   Future<void> pumpMap(WidgetTester tester) async {
@@ -74,7 +81,7 @@ void main() {
       tester,
       () =>
           find.byType(PolygonLayer).evaluate().isNotEmpty &&
-          find.byType(MapPin).evaluate().isNotEmpty,
+          pins(tester).isNotEmpty,
     );
   }
 
@@ -169,5 +176,63 @@ void main() {
     showInactive.value = false;
     await tester.pump();
     expect(pins(tester), hasLength(4));
+  });
+
+  testWidgets('legend counts match the pins shown; grey row says N hidden', (
+    tester,
+  ) async {
+    await pumpMap(tester);
+    final gone = (await tester.runAsync(() => repo.list()))!.first;
+    await tester.runAsync(() => repo.markDeceased(gone.id));
+    await settle(tester, () => pins(tester).length == 4);
+
+    /// The count text of the legend row titled [title].
+    String count(String title) {
+      final row = find.ancestor(
+        of: find.text(title),
+        matching: find.byType(Row),
+      );
+      final texts = tester
+          .widgetList<Text>(
+            find.descendant(of: row.first, matching: find.byType(Text)),
+          )
+          .map((t) => t.data!)
+          .toList();
+      return texts.last;
+    }
+
+    /// How many map pins (not legend swatches) have [color].
+    int pinsOf(Color color) =>
+        pins(tester).where((p) => p.color == color).length;
+
+    // Scroll the page to the legend (a drag at the centre would pan the map).
+    tester
+        .state<ScrollableState>(
+          find
+              .descendant(
+                of: find.byType(ListView),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        )
+        .position
+        .jumpTo(MapTab.mapHeight);
+    await tester.pump();
+    expect(find.text('COLOR LEGEND'), findsOneWidget);
+    expect(count('Red: bedridden'), '${pinsOf(AppColors.pinBedridden)}');
+    expect(count('Orange: homebound'), '${pinsOf(AppColors.pinHomebound)}');
+    expect(count('Green: social'), '${pinsOf(AppColors.pinSocial)}');
+    expect(
+      int.parse(count('Red: bedridden')) +
+          int.parse(count('Orange: homebound')) +
+          int.parse(count('Green: social')),
+      4,
+    );
+    expect(count('Grey: inactive'), '1 hidden');
+
+    showInactive.value = true;
+    await tester.pump();
+    expect(count('Grey: inactive'), '1');
+    expect(pinsOf(AppColors.pinInactive), 1);
   });
 }
