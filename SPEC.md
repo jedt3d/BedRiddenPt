@@ -67,7 +67,7 @@ FlutterMap(
   children: [
     TileLayer(
       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'com.example.bedridden_pt', // required by OSM policy
+      userAgentPackageName: 'com.example.bedriddenPt', // iOS bundle id from flutter create; required by OSM policy
     ),
     PolygonLayer(polygons: [districtBoundary]),           // Khlong San outline
     MarkerLayer(markers: [
@@ -162,9 +162,9 @@ check digit = (11 − sum mod 11) mod 10. The schema enforces it with a CHECK.
 
 ### Startup and Add behaviour
 
-1. **First launch:** 5 patients chosen at random from the sample pool are inserted. After that, data **persists** between launches.
+1. **First launch:** 5 patients chosen at random from the **active** records of the sample pool are inserted (so the list shows 5 with Show inactive off). Reset does the same. After that, data **persists** between launches.
    **Reset sample data** (⋮ menu, top-right of the PIN screen, so it works before login; asks for confirmation) replaces all patients with 5 new random ones. It keeps the volunteer's name.
-2. **Add** picks a random pool record **not yet in the database** and prefills the form. The volunteer can edit any field, and "Use my location" overwrites lat/lng. Saving inserts it.
+2. **Add** picks a random pool record **not yet in the database** and prefills the form, with status forced to **Active** (an inactive pool record never opens a locked form). The volunteer can edit any field, and "Use my location" overwrites lat/lng. Saving inserts it.
 3. When all 50 are in the database, Add opens an empty form.
 4. Saving with an existing `national_id` is **blocked** with the message "A patient with this national ID already exists."
 
