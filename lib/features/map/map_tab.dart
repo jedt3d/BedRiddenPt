@@ -9,6 +9,7 @@ import '../../geo/random_points.dart';
 import '../../shared/care_style.dart';
 import '../../shared/map_config.dart';
 import '../../theme/tokens.dart';
+import 'map_legend.dart';
 import 'map_pin.dart';
 
 /// The Map tab of Home (SPEC §7.2, Figma frames 14–16): OSM tiles and the
@@ -119,6 +120,7 @@ class _MapTabState extends State<MapTab> {
             ),
           ),
           _ShowInactiveCard(showInactive: showInactive),
+          MapLegend(patients: _patients, showInactive: showInactive.value),
         ],
       ),
     );
