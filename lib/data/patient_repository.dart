@@ -208,6 +208,16 @@ class PatientRepository extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Replaces all patients with [sampleSeedCount] new random pool records.
+  /// Only touches the database, so the volunteer's name is kept.
+  Future<void> resetSampleData() async {
+    await _db.transaction((txn) async {
+      await txn.delete('patients'); // phones and care needs cascade
+      await _seed(txn);
+    });
+    notifyListeners();
+  }
+
   // ---- internals ----
 
   Future<void> _seed(Transaction txn) async {
