@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.9 # SPEC §2
+          channel: stable
+      - run: flutter pub get
+      - name: tokens.dart matches design/tokens.json
+        run: |
+          dart run tool/gen_tokens.dart
+          git diff --exit-code lib/theme/tokens.dart
+      - name: No raw style values in lib/
+        run: tool/check_tokens.sh
+      - run: flutter analyze
+      - run: flutter test
