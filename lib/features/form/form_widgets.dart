@@ -339,3 +339,43 @@ class NeedChip extends StatelessWidget {
     );
   }
 }
+
+/// Opacity of the accent fill behind [FormBanner] (Figma node 10:556 binds
+/// `color/accent` at 0.1; design/tokens.json has no token for it yet).
+const _bannerTintOpacity = 0.1;
+
+/// The tinted note at the top of Add (Figma frames 19, 23).
+class FormBanner extends StatelessWidget {
+  const FormBanner({super.key, required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(
+        left: AppSpace.s16,
+        top: AppSpace.s16,
+        right: AppSpace.s16,
+      ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpace.s12,
+        vertical: AppSpace.s10,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: _bannerTintOpacity),
+        borderRadius: BorderRadius.circular(AppRadius.card),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              text,
+              style: AppText.footnote.copyWith(color: AppColors.labelInfo),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
