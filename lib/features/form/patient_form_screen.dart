@@ -15,9 +15,20 @@ import 'form_widgets.dart';
 /// Photo diameter (Figma frame 19 "Photo": 88).
 const _photoSize = 88.0;
 
+/// Banner when Add is prefilled from an unused sample-pool record.
+const prefilledBanner =
+    'Prefilled from the sample pool (a patient not yet registered). '
+    'Edit any field before saving.';
+
+/// Banner when all 50 pool records are registered (SPEC §7.3).
+const poolUsedUpBanner =
+    'All 50 sample-pool patients are already registered, so this form '
+    'starts empty.';
+
 /// Add / Edit form (SPEC §7.3, Figma frames 19–25), pushed on the root
-/// navigator (no tab bar). [patientId] null = Add; otherwise Edit that
-/// patient. Save inserts (registered by the volunteer) or updates, then
+/// navigator (no tab bar). [patientId] null = Add, prefilled from a random
+/// unused pool record (empty with a banner when all 50 are registered);
+/// otherwise Edit that patient. Save inserts (registered by the volunteer) or updates, then
 /// closes the form.
 class PatientFormScreen extends StatefulWidget {
   const PatientFormScreen({super.key, this.patientId});
@@ -32,6 +43,9 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   late final AppScope _scope;
   FormDraft? _draft;
   bool _saving = false;
+
+  /// The note at the top of Add (SPEC §6, §7.3); null for Edit.
+  String? _banner;
 
   bool get _isAdd => widget.patientId == null;
 
@@ -51,7 +65,10 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   Future<void> _load() async {
     final FormDraft draft;
     if (_isAdd) {
-      draft = FormDraft.empty();
+      final pool = await _scope.patients.nextUnusedPoolRecord();
+      if (!mounted) return;
+      draft = pool == null ? FormDraft.empty() : FormDraft.fromPatient(pool);
+      _banner = pool == null ? poolUsedUpBanner : prefilledBanner;
     } else {
       final p = await _scope.patients.getById(widget.patientId!);
       if (!mounted) return;
@@ -131,7 +148,12 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
       child: SafeArea(
         child: draft == null
             ? const Center(child: CupertinoActivityIndicator())
-            : _FormBody(draft: draft, isAdd: _isAdd, onChanged: _changed),
+            : _FormBody(
+                draft: draft,
+                isAdd: _isAdd,
+                banner: _banner,
+                onChanged: _changed,
+              ),
       ),
     );
   }
@@ -141,11 +163,13 @@ class _FormBody extends StatelessWidget {
   const _FormBody({
     required this.draft,
     required this.isAdd,
+    required this.banner,
     required this.onChanged,
   });
 
   final FormDraft draft;
   final bool isAdd;
+  final String? banner;
 
   /// Rebuild after a non-text value changed.
   final VoidCallback onChanged;
@@ -183,6 +207,7 @@ class _FormBody extends StatelessWidget {
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.only(bottom: AppSpace.s30),
       children: [
+        if (banner != null) FormBanner(text: banner!),
         _PhotoHeader(draft: d),
         CupertinoListSection.insetGrouped(
           header: const Text('PATIENT'),
