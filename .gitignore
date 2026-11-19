@@ -27,3 +27,6 @@ app.*.map.json
 # Claude Code: per-session worktrees and personal settings
 .claude/worktrees/
 .claude/settings.local.json
+
+# Local packaged exports (not part of the app)
+exports/
