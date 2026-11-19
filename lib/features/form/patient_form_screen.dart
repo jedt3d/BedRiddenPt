@@ -11,6 +11,7 @@ import '../../theme/tokens.dart';
 import '../detail/detail_screen.dart' show CareLevelBadge;
 import 'form_draft.dart';
 import 'form_location.dart';
+import 'form_photo.dart';
 import 'form_widgets.dart';
 
 /// Photo diameter (Figma frame 19 "Photo": 88).
@@ -126,6 +127,39 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
     }
   }
 
+  /// Change photo (SPEC §7.3): camera or library, copied into documents.
+  Future<void> _changePhoto() async {
+    FocusScope.of(context).unfocus();
+    final source = await showPhotoSourceSheet(context);
+    if (source == null || !mounted) return;
+    try {
+      final picked = await formPickImage(source);
+      if (picked == null) return;
+      final name = await copyPhotoToDocuments(picked);
+      if (mounted) setState(() => _draft!.photoPath = name);
+    } on Exception catch (e) {
+      if (!mounted) return;
+      await showCupertinoDialog<void>(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("Couldn't use a photo"),
+          content: Text(
+            source == PhotoSource.camera
+                ? 'The camera isn’t available. Choose from library instead.'
+                : '$e',
+          ),
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   /// Field messages to show: none until the first Save, then live.
   Map<DraftField, String> _errors() {
     final draft = _draft;
@@ -219,6 +253,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                 errors: _errors(),
                 location: _location,
                 onUseLocation: _useMyLocation,
+                onChangePhoto: _changePhoto,
                 onChanged: _changed,
               ),
       ),
@@ -234,6 +269,7 @@ class _FormBody extends StatelessWidget {
     required this.errors,
     required this.location,
     required this.onUseLocation,
+    required this.onChangePhoto,
     required this.onChanged,
   });
 
@@ -243,6 +279,7 @@ class _FormBody extends StatelessWidget {
   final Map<DraftField, String> errors;
   final _LocationState location;
   final VoidCallback onUseLocation;
+  final VoidCallback onChangePhoto;
 
   /// Rebuild after a non-text value changed.
   final VoidCallback onChanged;
@@ -282,7 +319,7 @@ class _FormBody extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpace.s30),
       children: [
         if (banner != null) FormBanner(text: banner!),
-        _PhotoHeader(draft: d),
+        _PhotoHeader(draft: d, onChangePhoto: onChangePhoto),
         CupertinoListSection.insetGrouped(
           header: const Text('PATIENT'),
           children: [
@@ -804,37 +841,50 @@ const formStatuses = [
   PatientStatus.moved,
 ];
 
+/// The photo with "Change photo" / "Add photo" under it (Figma 19, 23).
 class _PhotoHeader extends StatelessWidget {
-  const _PhotoHeader({required this.draft});
+  const _PhotoHeader({required this.draft, required this.onChangePhoto});
 
   final FormDraft draft;
+  final VoidCallback onChangePhoto;
 
   @override
   Widget build(BuildContext context) {
     final b = draft.base;
     return Padding(
       padding: const EdgeInsets.only(top: AppSpace.s16),
-      child: Center(
-        child: PatientAvatar(
-          // Only the name and photo are read.
-          patient: Patient(
-            id: b?.id ?? '',
-            nationalId: '',
-            fullName: draft.fullName.text,
-            sex: draft.sex ?? Sex.male,
-            birthYear: 0,
-            photoPath: draft.photoPath,
-            contactName: '',
-            contactRelation: ContactRelation.self,
-            subdistrict: '',
-            lat: 0,
-            lng: 0,
-            careLevel: CareLevel.social,
-            mainCondition: MainCondition.other,
-            livingSituation: LivingSituation.withCaregiver,
+      child: Column(
+        children: [
+          PatientAvatar(
+            // Only the name and photo are read.
+            patient: Patient(
+              id: b?.id ?? '',
+              nationalId: '',
+              fullName: draft.fullName.text,
+              sex: draft.sex ?? Sex.male,
+              birthYear: 0,
+              photoPath: draft.photoPath,
+              contactName: '',
+              contactRelation: ContactRelation.self,
+              subdistrict: '',
+              lat: 0,
+              lng: 0,
+              careLevel: CareLevel.social,
+              mainCondition: MainCondition.other,
+              livingSituation: LivingSituation.withCaregiver,
+            ),
+            size: _photoSize,
           ),
-          size: _photoSize,
-        ),
+          CupertinoButton(
+            padding: const EdgeInsets.symmetric(vertical: AppSpace.s6),
+            minimumSize: Size.zero,
+            onPressed: onChangePhoto,
+            child: Text(
+              draft.photoPath == null ? 'Add photo' : 'Change photo',
+              style: AppText.subheadline.copyWith(color: AppColors.accent),
+            ),
+          ),
+        ],
       ),
     );
   }

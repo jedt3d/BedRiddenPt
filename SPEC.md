@@ -151,6 +151,8 @@ Bangkok addresses use soi and road, not village numbers.
 
 **National ID checksum:** for digits d1…d12, sum = Σ dᵢ × (14 − i);
 check digit = (11 − sum mod 11) mod 10. The schema enforces it with a CHECK.
+How the form, the repository and the schema check it, with a flowchart and a
+worked example: [`docs/national-id-validation.md`](docs/national-id-validation.md).
 
 ## 6. Sample data pool
 
@@ -189,7 +191,7 @@ The 25 frames in the [Figma prototype](https://www.figma.com/design/zHNLIMNEn1XP
    - Prefilled as in §6. When all 50 pool patients are registered, the form starts empty with the banner "All 50 sample-pool patients are already registered, so this form starts empty."
    - **Use my location** sets lat/lng, shows ±m accuracy, and also sets the subdistrict from the polygon it falls in (`NamedAreas.nameAt`). Outside the district, the subdistrict is left unchanged and the form shows "Outside Khlong San district".
    - Photo: "Change photo" → action sheet Take photo / Choose from library / Cancel.
-   - National ID is shown and typed as `3-XXXX-XXXXX-XX-X` and stored as 13 digits. A bad checksum shows "This national ID isn't valid. Check the 13 digits." A duplicate shows "A patient with this national ID already exists." under the field after Save, and Save is blocked.
+   - National ID is shown and typed as `3-XXXX-XXXXX-XX-X` and stored as 13 digits. A bad checksum shows "This national ID isn't valid. Check the 13 digits." A duplicate shows "A patient with this national ID already exists." under the field after Save, and Save is blocked. See [`docs/national-id-validation.md`](docs/national-id-validation.md).
    - Birth year is entered in the Buddhist era ("Born (B.E.)") and stored Gregorian.
    - ADL score is set with a − / + stepper. Care level is derived from it (bands in §5) and shown read-only ("Set by ADL score"); there is no care-level picker.
    - Contact phones: "+ Add phone"; Phone 1 is the one Call dials.
