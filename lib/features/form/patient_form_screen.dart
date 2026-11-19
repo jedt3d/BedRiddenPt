@@ -129,7 +129,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
 
   /// Change photo (SPEC §7.3): camera or library, copied into documents.
   Future<void> _changePhoto() async {
-    FocusScope.of(context).unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
     final source = await showPhotoSourceSheet(context);
     if (source == null || !mounted) return;
     try {
@@ -174,7 +174,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
 
   Future<void> _save() async {
     final draft = _draft!;
-    FocusScope.of(context).unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _submitted = true);
     if (_errors().isNotEmpty) return;
     setState(() => _saving = true);
@@ -297,7 +297,7 @@ class _FormBody extends StatelessWidget {
     required T? selected,
     required void Function(T) onPicked,
   }) async {
-    FocusScope.of(context).unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
     final picked = await showChoicePicker<T>(
       context,
       title: title,
@@ -314,383 +314,393 @@ class _FormBody extends StatelessWidget {
     final year = formClock().year;
     final birthYear = d.birthYear;
     final deceased = d.status == PatientStatus.deceased;
-    return ListView(
+    // Not a lazy ListView: a focused field scrolled out of view must stay
+    // built, or iOS can keep its keyboard up with nothing attached to it
+    // (seen on the Simulator over the photo sheet).
+    return SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.only(bottom: AppSpace.s30),
-      children: [
-        if (banner != null) FormBanner(text: banner!),
-        _PhotoHeader(draft: d, onChangePhoto: onChangePhoto),
-        CupertinoListSection.insetGrouped(
-          header: const Text('PATIENT'),
-          children: [
-            FieldRow(
-              icon: CupertinoIcons.person_crop_rectangle,
-              label: 'National ID',
-              error: errors[DraftField.nationalId],
-              child: FieldText(
-                controller: d.nationalId,
-                placeholder: '13 digits',
-                color: errors.containsKey(DraftField.nationalId)
-                    ? AppColors.actionDestructive
-                    : AppColors.labelPrimary,
-                keyboardType: TextInputType.number,
-                inputFormatters: [ReformatInput(formatNationalId)],
-              ),
-            ),
-            FieldRow(
-              icon: CupertinoIcons.person,
-              label: 'Full name',
-              error: errors[DraftField.fullName],
-              child: FieldText(
-                controller: d.fullName,
-                placeholder: 'Required',
-                maxLines: null,
-              ),
-            ),
-            FieldRow(
-              icon: CupertinoIcons.person,
-              label: 'Sex',
-              error: errors[DraftField.sex],
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: CupertinoSlidingSegmentedControl<Sex>(
-                  groupValue: d.sex,
-                  onValueChanged: (v) => _set(() => d.sex = v),
-                  children: const {
-                    Sex.male: _SexSegment(Sex.male),
-                    Sex.female: _SexSegment(Sex.female),
-                  },
-                ),
-              ),
-            ),
-            FieldRow(
-              icon: CupertinoIcons.calendar,
-              label: 'Born (B.E.)',
-              error: errors[DraftField.born],
-              child: Row(
-                children: [
-                  Expanded(
-                    child: FieldText(
-                      controller: d.bornBE,
-                      placeholder: 'Year, e.g. 2500',
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(4),
-                      ],
-                    ),
-                  ),
-                  if (birthYear != null && d.bornBE.text.length == 4)
-                    Text(
-                      '(age ${year - birthYear})',
-                      style: AppText.body.copyWith(
-                        color: AppColors.labelSecondary,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        CupertinoListSection.insetGrouped(
-          header: const Text('LOCATION'),
-          footer: Text(
-            location.used
-                ? 'Use my location replaced the '
-                      '${isAdd ? 'prefilled' : 'saved'} coordinates.'
-                : 'Stand at the patient’s home and tap Use my location.',
-          ),
-          children: [
-            FieldRow(
-              icon: CupertinoIcons.map,
-              label: 'Subdistrict',
-              error: errors[DraftField.subdistrict],
-              child: PickerValue(
-                text: d.subdistrict == null
-                    ? null
-                    : subdistrictLabel(d.subdistrict!),
-                onTap: () => _pick<String>(
-                  context,
-                  title: 'Subdistrict',
-                  options: khlongSanSubdistricts,
-                  label: subdistrictLabel,
-                  selected: d.subdistrict,
-                  onPicked: (v) => d.subdistrict = v,
-                ),
-              ),
-            ),
-            FieldRow(
-              icon: CupertinoIcons.house,
-              label: 'Soi / road',
-              child: FieldText(
-                controller: d.addressNote,
-                placeholder: 'Soi, road, landmark',
-                maxLines: null,
-              ),
-            ),
-            FieldRow(
-              icon: CupertinoIcons.location,
-              label: 'Coordinates',
-              error: errors[DraftField.coordinates],
-              child: Text(
-                d.lat == null || d.lng == null
-                    ? 'Required: tap Use my location'
-                    : '${d.lat!.toStringAsFixed(6)}, '
-                          '${d.lng!.toStringAsFixed(6)}',
-                style: AppText.body.copyWith(
-                  color: d.lat == null
-                      ? AppColors.labelQuaternary
-                      : AppColors.labelSecondary,
-                ),
-              ),
-            ),
-            _UseMyLocationRow(
-              locating: location.locating,
-              accuracyM: d.lat == null ? null : d.gpsAccuracyM,
-              hasCoordinates: d.lat != null,
-              message: location.message,
-              onPressed: location.locating ? null : onUseLocation,
-            ),
-          ],
-        ),
-        CupertinoListSection.insetGrouped(
-          header: const Text('CONTACT PERSON'),
-          footer: const Text('Call dials Phone 1.'),
-          children: [
-            FieldRow(
-              icon: CupertinoIcons.person,
-              label: 'Name',
-              error: errors[DraftField.contactName],
-              child: FieldText(
-                controller: d.contactName,
-                placeholder: 'Required',
-                maxLines: null,
-              ),
-            ),
-            FieldRow(
-              icon: CupertinoIcons.person_2,
-              label: 'Relationship',
-              error: errors[DraftField.relation],
-              child: PickerValue(
-                text: d.relation?.label,
-                onTap: () => _pick<ContactRelation>(
-                  context,
-                  title: 'Relationship',
-                  options: ContactRelation.values,
-                  label: (v) => v.label,
-                  selected: d.relation,
-                  onPicked: (v) => d.relation = v,
-                ),
-              ),
-            ),
-            for (var i = 0; i < d.phones.length; i++)
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (banner != null) FormBanner(text: banner!),
+          _PhotoHeader(draft: d, onChangePhoto: onChangePhoto),
+          CupertinoListSection.insetGrouped(
+            header: const Caption('PATIENT'),
+            children: [
               FieldRow(
-                icon: CupertinoIcons.phone,
-                label: 'Phone ${i + 1}',
-                error: i == d.phones.length - 1
-                    ? errors[DraftField.phones]
-                    : null,
+                icon: CupertinoIcons.person_crop_rectangle,
+                label: 'National ID',
+                error: errors[DraftField.nationalId],
                 child: FieldText(
-                  controller: d.phones[i],
-                  placeholder: '10 digits',
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [ReformatInput(formatPhoneInput)],
+                  controller: d.nationalId,
+                  placeholder: '13 digits',
+                  color: errors.containsKey(DraftField.nationalId)
+                      ? AppColors.actionDestructive
+                      : AppColors.labelPrimary,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [ReformatInput(formatNationalId)],
                 ),
               ),
-            CupertinoButton(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpace.s16),
-              alignment: Alignment.centerLeft,
-              onPressed: () => _set(() => d.addPhone(onChanged)),
-              child: const Text('+ Add phone'),
-            ),
-          ],
-        ),
-        CupertinoListSection.insetGrouped(
-          header: const Text('CARE'),
-          footer: const Text(
-            'Care level follows the ADL score: bedridden 0–4, '
-            'homebound 5–11, social 12–20.',
-          ),
-          children: [
-            FieldRow(
-              icon: CupertinoIcons.chart_bar,
-              label: 'ADL score',
-              error: errors[DraftField.adlScore],
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '${d.adlScore ?? 0}',
-                      style: AppText.body.copyWith(
-                        color: d.adlScore == null
-                            ? AppColors.labelQuaternary
-                            : AppColors.labelPrimary,
-                      ),
-                    ),
-                  ),
-                  AdlStepper(
-                    onMinus: d.adlScore == 0
-                        ? null
-                        : () => _set(() => d.stepAdl(-1)),
-                    onPlus: d.adlScore == 20
-                        ? null
-                        : () => _set(() => d.stepAdl(1)),
-                  ),
-                ],
-              ),
-            ),
-            FieldRow(
-              icon: CupertinoIcons.heart,
-              label: 'Care level',
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: d.careLevel == null
-                    ? Text(
-                        'Set by ADL score',
-                        style: AppText.body.copyWith(
-                          color: AppColors.labelQuaternary,
-                        ),
-                      )
-                    : CareLevelBadge(level: d.careLevel!),
-              ),
-            ),
-            FieldRow(
-              icon: CupertinoIcons.plus_square,
-              label: 'Main condition',
-              error: errors[DraftField.mainCondition],
-              child: PickerValue(
-                text: d.mainCondition?.label,
-                onTap: () => _pick<MainCondition>(
-                  context,
-                  title: 'Main condition',
-                  options: MainCondition.values,
-                  label: (v) => v.label,
-                  selected: d.mainCondition,
-                  onPicked: (v) => d.mainCondition = v,
-                ),
-              ),
-            ),
-            FieldRow(
-              icon: CupertinoIcons.house_alt,
-              label: 'Living situation',
-              error: errors[DraftField.livingSituation],
-              child: PickerValue(
-                text: d.livingSituation?.label,
-                onTap: () => _pick<LivingSituation>(
-                  context,
-                  title: 'Living situation',
-                  options: LivingSituation.values,
-                  label: (v) => v.label,
-                  selected: d.livingSituation,
-                  onPicked: (v) => d.livingSituation = v,
-                ),
-              ),
-            ),
-            FieldRow(
-              icon: CupertinoIcons.bandage,
-              label: 'Care needs',
-              below: Padding(
-                padding: const EdgeInsets.only(top: AppSpace.s10),
-                child: Wrap(
-                  spacing: AppSpace.s6,
-                  runSpacing: AppSpace.s6,
-                  children: [
-                    for (final n in CareNeed.values)
-                      NeedChip(
-                        label: n.label,
-                        selected: d.careNeeds.contains(n),
-                        onTap: () => _set(() {
-                          if (!d.careNeeds.remove(n)) d.careNeeds.add(n);
-                        }),
-                      ),
-                  ],
-                ),
-              ),
-              child: const SizedBox.shrink(),
-            ),
-          ],
-        ),
-        CupertinoListSection.insetGrouped(
-          header: const Text('STATUS'),
-          footer: Text(
-            deceased
-                ? deceasedStatusHint
-                : 'To mark a patient deceased, swipe left on the list.',
-          ),
-          children: [
-            if (deceased)
-              // Read-only with a lock (SPEC §7.3, Figma frame 25): restore is
-              // by swipe in the list, never from the form.
               FieldRow(
-                icon: CupertinoIcons.checkmark_circle,
-                label: 'Status',
+                icon: CupertinoIcons.person,
+                label: 'Full name',
+                error: errors[DraftField.fullName],
+                child: FieldText(
+                  controller: d.fullName,
+                  placeholder: 'Required',
+                  maxLines: null,
+                ),
+              ),
+              FieldRow(
+                icon: CupertinoIcons.person,
+                label: 'Sex',
+                error: errors[DraftField.sex],
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: CupertinoSlidingSegmentedControl<Sex>(
+                    groupValue: d.sex,
+                    onValueChanged: (v) => _set(() => d.sex = v),
+                    children: const {
+                      Sex.male: _SexSegment(Sex.male),
+                      Sex.female: _SexSegment(Sex.female),
+                    },
+                  ),
+                ),
+              ),
+              FieldRow(
+                icon: CupertinoIcons.calendar,
+                label: 'Born (B.E.)',
+                error: errors[DraftField.born],
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        PatientStatus.deceased.label,
-                        style: AppText.body.copyWith(
-                          color: AppColors.labelTertiary,
-                        ),
+                      child: FieldText(
+                        controller: d.bornBE,
+                        placeholder: 'Year, e.g. 2500',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(4),
+                        ],
                       ),
                     ),
-                    const Icon(
-                      CupertinoIcons.lock_fill,
-                      size: AppSpace.s16,
-                      color: AppColors.iconSecondary,
-                    ),
+                    if (birthYear != null && d.bornBE.text.length == 4)
+                      Text(
+                        '(age ${year - birthYear})',
+                        style: AppText.body.copyWith(
+                          color: AppColors.labelSecondary,
+                        ),
+                      ),
                   ],
-                ),
-              )
-            else
-              Padding(
-                padding: const EdgeInsets.all(AppSpace.s8),
-                child: CupertinoSlidingSegmentedControl<PatientStatus>(
-                  groupValue: d.status,
-                  onValueChanged: (v) {
-                    if (v != null) _set(() => d.status = v);
-                  },
-                  children: {
-                    for (final s in formStatuses) s: _Segment(s.label),
-                  },
-                ),
-              ),
-          ],
-        ),
-        CupertinoListSection.insetGrouped(
-          header: const Text('NOTES'),
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpace.s16,
-                vertical: AppSpace.s11,
-              ),
-              child: FieldText(
-                controller: d.notes,
-                placeholder: 'Optional',
-                maxLines: null,
-              ),
-            ),
-          ],
-        ),
-        if (!isAdd)
-          CupertinoListSection.insetGrouped(
-            header: const Text('REGISTRATION'),
-            footer: const Text(
-              'Set when the patient was first saved; edits never change it.',
-            ),
-            children: [
-              FieldRow(
-                icon: CupertinoIcons.person_badge_plus,
-                label: 'Registered by',
-                child: Text(
-                  d.base!.registeredBy.isEmpty ? '—' : d.base!.registeredBy,
-                  style: AppText.body.copyWith(color: AppColors.labelSecondary),
                 ),
               ),
             ],
           ),
-      ],
+          CupertinoListSection.insetGrouped(
+            header: const Caption('LOCATION'),
+            footer: Caption(
+              location.used
+                  ? 'Use my location replaced the '
+                        '${isAdd ? 'prefilled' : 'saved'} coordinates.'
+                  : 'Stand at the patient’s home and tap Use my location.',
+            ),
+            children: [
+              FieldRow(
+                icon: CupertinoIcons.map,
+                label: 'Subdistrict',
+                error: errors[DraftField.subdistrict],
+                child: PickerValue(
+                  text: d.subdistrict == null
+                      ? null
+                      : subdistrictLabel(d.subdistrict!),
+                  onTap: () => _pick<String>(
+                    context,
+                    title: 'Subdistrict',
+                    options: khlongSanSubdistricts,
+                    label: subdistrictLabel,
+                    selected: d.subdistrict,
+                    onPicked: (v) => d.subdistrict = v,
+                  ),
+                ),
+              ),
+              FieldRow(
+                icon: CupertinoIcons.house,
+                label: 'Soi / road',
+                child: FieldText(
+                  controller: d.addressNote,
+                  placeholder: 'Soi, road, landmark',
+                  maxLines: null,
+                ),
+              ),
+              FieldRow(
+                icon: CupertinoIcons.location,
+                label: 'Coordinates',
+                error: errors[DraftField.coordinates],
+                child: Text(
+                  d.lat == null || d.lng == null
+                      ? 'Required: tap Use my location'
+                      : '${d.lat!.toStringAsFixed(6)}, '
+                            '${d.lng!.toStringAsFixed(6)}',
+                  style: AppText.body.copyWith(
+                    color: d.lat == null
+                        ? AppColors.labelQuaternary
+                        : AppColors.labelSecondary,
+                  ),
+                ),
+              ),
+              _UseMyLocationRow(
+                locating: location.locating,
+                accuracyM: d.lat == null ? null : d.gpsAccuracyM,
+                hasCoordinates: d.lat != null,
+                message: location.message,
+                onPressed: location.locating ? null : onUseLocation,
+              ),
+            ],
+          ),
+          CupertinoListSection.insetGrouped(
+            header: const Caption('CONTACT PERSON'),
+            footer: const Caption('Call dials Phone 1.'),
+            children: [
+              FieldRow(
+                icon: CupertinoIcons.person,
+                label: 'Name',
+                error: errors[DraftField.contactName],
+                child: FieldText(
+                  controller: d.contactName,
+                  placeholder: 'Required',
+                  maxLines: null,
+                ),
+              ),
+              FieldRow(
+                icon: CupertinoIcons.person_2,
+                label: 'Relationship',
+                error: errors[DraftField.relation],
+                child: PickerValue(
+                  text: d.relation?.label,
+                  onTap: () => _pick<ContactRelation>(
+                    context,
+                    title: 'Relationship',
+                    options: ContactRelation.values,
+                    label: (v) => v.label,
+                    selected: d.relation,
+                    onPicked: (v) => d.relation = v,
+                  ),
+                ),
+              ),
+              for (var i = 0; i < d.phones.length; i++)
+                FieldRow(
+                  icon: CupertinoIcons.phone,
+                  label: 'Phone ${i + 1}',
+                  error: i == d.phones.length - 1
+                      ? errors[DraftField.phones]
+                      : null,
+                  child: FieldText(
+                    controller: d.phones[i],
+                    placeholder: '10 digits',
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [ReformatInput(formatPhoneInput)],
+                  ),
+                ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: CupertinoButton(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpace.s16),
+                  onPressed: () => _set(() => d.addPhone(onChanged)),
+                  child: const Text('+ Add phone'),
+                ),
+              ),
+            ],
+          ),
+          CupertinoListSection.insetGrouped(
+            header: const Caption('CARE'),
+            footer: const Caption(
+              'Care level follows the ADL score: bedridden 0–4, '
+              'homebound 5–11, social 12–20.',
+            ),
+            children: [
+              FieldRow(
+                icon: CupertinoIcons.chart_bar,
+                label: 'ADL score',
+                error: errors[DraftField.adlScore],
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${d.adlScore ?? 0}',
+                        style: AppText.body.copyWith(
+                          color: d.adlScore == null
+                              ? AppColors.labelQuaternary
+                              : AppColors.labelPrimary,
+                        ),
+                      ),
+                    ),
+                    AdlStepper(
+                      onMinus: d.adlScore == 0
+                          ? null
+                          : () => _set(() => d.stepAdl(-1)),
+                      onPlus: d.adlScore == 20
+                          ? null
+                          : () => _set(() => d.stepAdl(1)),
+                    ),
+                  ],
+                ),
+              ),
+              FieldRow(
+                icon: CupertinoIcons.heart,
+                label: 'Care level',
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: d.careLevel == null
+                      ? Text(
+                          'Set by ADL score',
+                          style: AppText.body.copyWith(
+                            color: AppColors.labelQuaternary,
+                          ),
+                        )
+                      : CareLevelBadge(level: d.careLevel!),
+                ),
+              ),
+              FieldRow(
+                icon: CupertinoIcons.plus_square,
+                label: 'Main condition',
+                error: errors[DraftField.mainCondition],
+                child: PickerValue(
+                  text: d.mainCondition?.label,
+                  onTap: () => _pick<MainCondition>(
+                    context,
+                    title: 'Main condition',
+                    options: MainCondition.values,
+                    label: (v) => v.label,
+                    selected: d.mainCondition,
+                    onPicked: (v) => d.mainCondition = v,
+                  ),
+                ),
+              ),
+              FieldRow(
+                icon: CupertinoIcons.house_alt,
+                label: 'Living situation',
+                error: errors[DraftField.livingSituation],
+                child: PickerValue(
+                  text: d.livingSituation?.label,
+                  onTap: () => _pick<LivingSituation>(
+                    context,
+                    title: 'Living situation',
+                    options: LivingSituation.values,
+                    label: (v) => v.label,
+                    selected: d.livingSituation,
+                    onPicked: (v) => d.livingSituation = v,
+                  ),
+                ),
+              ),
+              FieldRow(
+                icon: CupertinoIcons.bandage,
+                label: 'Care needs',
+                below: Padding(
+                  padding: const EdgeInsets.only(top: AppSpace.s10),
+                  child: Wrap(
+                    spacing: AppSpace.s6,
+                    runSpacing: AppSpace.s6,
+                    children: [
+                      for (final n in CareNeed.values)
+                        NeedChip(
+                          label: n.label,
+                          selected: d.careNeeds.contains(n),
+                          onTap: () => _set(() {
+                            if (!d.careNeeds.remove(n)) d.careNeeds.add(n);
+                          }),
+                        ),
+                    ],
+                  ),
+                ),
+                child: const SizedBox.shrink(),
+              ),
+            ],
+          ),
+          CupertinoListSection.insetGrouped(
+            header: const Caption('STATUS'),
+            footer: Caption(
+              deceased
+                  ? deceasedStatusHint
+                  : 'To mark a patient deceased, swipe left on the list.',
+            ),
+            children: [
+              if (deceased)
+                // Read-only with a lock (SPEC §7.3, Figma frame 25): restore is
+                // by swipe in the list, never from the form.
+                FieldRow(
+                  icon: CupertinoIcons.checkmark_circle,
+                  label: 'Status',
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          PatientStatus.deceased.label,
+                          style: AppText.body.copyWith(
+                            color: AppColors.labelTertiary,
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        CupertinoIcons.lock_fill,
+                        size: AppSpace.s16,
+                        color: AppColors.iconSecondary,
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.all(AppSpace.s8),
+                  child: CupertinoSlidingSegmentedControl<PatientStatus>(
+                    groupValue: d.status,
+                    onValueChanged: (v) {
+                      if (v != null) _set(() => d.status = v);
+                    },
+                    children: {
+                      for (final s in formStatuses) s: _Segment(s.label),
+                    },
+                  ),
+                ),
+            ],
+          ),
+          CupertinoListSection.insetGrouped(
+            header: const Caption('NOTES'),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpace.s16,
+                  vertical: AppSpace.s11,
+                ),
+                child: FieldText(
+                  controller: d.notes,
+                  placeholder: 'Optional',
+                  maxLines: null,
+                ),
+              ),
+            ],
+          ),
+          if (!isAdd)
+            CupertinoListSection.insetGrouped(
+              header: const Caption('REGISTRATION'),
+              footer: const Caption(
+                'Set when the patient was first saved; edits never change it.',
+              ),
+              children: [
+                FieldRow(
+                  icon: CupertinoIcons.person_badge_plus,
+                  label: 'Registered by',
+                  child: Text(
+                    d.base!.registeredBy.isEmpty ? '—' : d.base!.registeredBy,
+                    style: AppText.body.copyWith(
+                      color: AppColors.labelSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }
