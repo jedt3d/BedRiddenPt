@@ -258,10 +258,20 @@ class DistrictMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FlutterMap(
+      // Rebuilt once when the outline arrives, so the camera can fit it.
+      key: ValueKey(district.isEmpty),
       options: MapOptions(
         onTap: (_, _) => onTap?.call(),
         initialCenter: MapConfig.center,
         initialZoom: MapConfig.initialZoom,
+        // MapConfig's zoom 14.5 fits the district on a full portrait screen,
+        // not in this shorter map (Simulator check), so fit the outline.
+        initialCameraFit: district.isEmpty
+            ? null
+            : CameraFit.coordinates(
+                coordinates: district,
+                padding: const EdgeInsets.all(AppSpace.s8),
+              ),
         backgroundColor: AppColors.mapLand,
         interactionOptions: const InteractionOptions(
           flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
