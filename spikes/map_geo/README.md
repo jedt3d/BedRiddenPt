@@ -1,17 +1,26 @@
-# map_geo
+# map_geo spike
 
-A new Flutter project.
+A throwaway Flutter app that proved the map approach before the build. It's a separate package with its own `pubspec.yaml`, and the root analyzer excludes it.
 
-## Getting Started
+It showed, on the iOS Simulator (iPhone 16 Pro):
+- OpenStreetMap tiles through `flutter_map`, with the Khlong San district and subdistrict outlines from `assets/geo/`
+- all 50 sample patients as pins colored by care level
+- "Use my location" with ±m accuracy
 
-This project is a starting point for a Flutter application.
+Screenshots are in `docs/`. The spike uses Material widgets; the app does not.
 
-A few resources to get you started if this is your first Flutter project:
+## Still in use
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- `lib/geo/random_points.dart` (`GeoArea`, `randomPointsInArea`, `NamedAreas.nameAt`) and `lib/geo/nearest_road.dart` (`NamedRoads.nearestRoad`) are imported by `data/gen_bootstrap.dart`. **Don't move them.**
+- The app uses byte-for-byte copies in the root `lib/geo/`; a test there keeps the copies identical.
+- `assets/` here holds copies of the root `assets/geo/` files and `assets/bootstrap.json`; refresh them if those change.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Run
+
+```bash
+cd spikes/map_geo && flutter run
+```
+
+```bash
+cd spikes/map_geo && flutter test
+```

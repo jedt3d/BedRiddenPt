@@ -2,6 +2,13 @@
 
 Flutter prototype for recording bedridden patients in Khlong San district, Bangkok. The spec is `SPEC.md`.
 
+- Current state: `docs/STATUS.md` (kept by the hub session). How to run and the repo layout: `README.md`.
+- `main` is protected: open a PR (body `Closes #N`), CI must pass, and the branch must be up to date with `main`.
+- Shared folders `lib/app/`, `lib/data/`, `lib/shared/`, `lib/geo/` and `SPEC.md`/`GLOSSARY.md` have one owner (the hub); feature work stays in `lib/features/<area>/` (see `lib/features/README.md`).
+- Widget tests run at phone size (393×852); the default test view hides overflows.
+- Stage files by name (`git add <path>`), never `git add -A`, in folders shared with other sessions.
+- Progress page: the `/build-timeline` skill (`docs/build-timeline.md`).
+
 ## Agent skills
 
 ### Issue tracker

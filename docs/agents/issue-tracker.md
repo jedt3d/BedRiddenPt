@@ -13,7 +13,7 @@ Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all o
 
 Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
 
-> Repo: [jedt3d/BedRiddenPt](https://github.com/jedt3d/BedRiddenPt) (public), remote `origin` over HTTPS. Build-plan issues #1–#27 filed 2026-11-19.
+> Repo: [jedt3d/BedRiddenPt](https://github.com/jedt3d/BedRiddenPt) (public), remote `origin` over HTTPS. Build-plan issues #1–#28 were filed 2026-11-19, each with "Done when" and "Blocked by: #…" lines; PR bodies say `Closes #N`. `main` is protected: a PR needs the `check` CI job green and must be up to date with `main`. Merge stacked PRs by retargeting the next PR to `main` first, and delete branches only at the end.
 
 ## Pull requests as a triage surface
 

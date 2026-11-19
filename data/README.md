@@ -12,7 +12,7 @@ still match a real person by chance. Use them only to test this prototype.
 |---|---|
 | `gen_bootstrap.dart` | Deterministic generator (fixed seed `20261119`). The only source; everything below is its output. |
 | `schema.sql` | **The app's real SQLite schema** (SPEC §5), ready for `sqflite`. |
-| `../assets/bootstrap.json` | The 50-record sample pool the app seeds from (camelCase field names). |
+| `../assets/bootstrap.json` | The 50-record sample pool the app seeds from (camelCase field names). On first launch and on Reset the app inserts 5 random **active** records; Add prefills from an unused one with status forced to active (SPEC §6). |
 | `patients.csv` | Same 50 records, same column names. |
 | `seed.sql` | `INSERT`s for all 50, in one transaction, for the `sqlite3` CLI. |
 | `ER.md` / `ER.svg` | ER diagram of `schema.sql` (Mermaid source and a rendered copy). |

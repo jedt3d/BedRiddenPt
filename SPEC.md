@@ -1,6 +1,6 @@
 # Bedridden Patient Locator — Prototype Spec (Draft 3)
 
-Date: 2026-11-19 · Status: draft 3, includes the grilling session decisions (terms in `GLOSSARY.md`) · Timebox: 1–2 hours of build
+Date: 2026-11-19 · Status: draft 3, **implemented** on `main` (issues #1–#28 on GitHub; see `docs/STATUS.md`). Includes the grilling session decisions (terms in `GLOSSARY.md`). Timebox was 1–2 hours of build; the actual build took about 2 h 40 min (§9)
 
 **Changes in draft 3**
 - UI uses Flutter's **Cupertino** (iOS-style) widgets.
@@ -47,7 +47,7 @@ in the iOS Simulator.
 | Area | **Khlong San District (เขตคลองสาน), Bangkok**: OSM relation 3147280, ≈ 5.96 km², 4 subdistricts (§3) | Files in `assets/geo/`; source and attribution in `assets/geo/README.md` |
 | Map start view | Center **13.7228, 100.5023** (district centroid), zoom **14.5** as the start; the Map tab then **fits the whole district outline** in its map area (≈ zoom 14.3 on iPhone 16 Pro), as in Figma frame 14 | Spike verified 14.5 full-screen; the Map tab's map is shorter (legend below), so it fits to the outline (PR #63) |
 | Photo | `image_picker` 1.2.4 | Simulator has no camera → gallery |
-| Photo files | `path_provider` 2.1.6 | Picked photos are copied into the app documents folder; the database stores the path |
+| Photo files | `path_provider` 2.1.6 | Picked photos are copied into the app documents folder; `photo_path` stores only the **file name** (iOS container paths change on reinstall) |
 | Call / navigate | `url_launcher` 6.3.3 | `tel:` and an Apple Maps URL |
 | Volunteer name | `shared_preferences` 2.5.6 | Plain storage, no encryption (accepted). The PIN is the constant `000000` in code, not stored |
 | Tests (dev only) | `sqflite_common_ffi` 2.4.2 (`dev_dependencies`) | Runs the real `data/schema.sql` in an in-memory DB under `flutter test`; not shipped. `data/schema.sql` is listed under `flutter: assets:` and loaded at first launch. New patient ids are UUID v4 from `Random.secure()` (no `uuid` package) |
@@ -214,19 +214,21 @@ Dates show the Buddhist era (e.g. "Born 2493 (age 76)"). All UI text is in Engli
 download is not allowed. Fine for a prototype. Change `urlTemplate` for a real
 rollout.
 
-## 9. Build order (timebox)
+## 9. Build order: plan and result
 
-| # | Step | Est. |
+The plan became 28 GitHub issues, each with "Done when" and "Blocked by" lines. One hub session built them in worker streams (Opus 5.5, own git worktree, one PR per issue), with a read-only expert session for consults. Details: `docs/STATUS.md`; retrospective: `docs/LESSONS_LEARNED.md`.
+
+| Stream | Issues | What |
 |---|---|---|
-| 1 | `flutter create`, packages, Info.plist keys | 10 min |
-| 2 | sqflite: open DB, run `schema.sql`, reset + seed 5 on launch | 20 min |
-| 3 | List tab + Detail | 20 min |
-| 4 | Map tab (outline + pins), from the `spikes/map_geo/` spike | 10 min |
-| 5 | Add/Edit form, pool prefill, GPS, photo, duplicate block | 25 min |
-| 6 | PIN screen | 10 min |
-| 7 | Call/navigate buttons, map color legend | 10 min |
+| A Foundation | #1 #2 #3 #28 #4–#7 | `flutter create`, packages, Info.plist, design tokens + check, DB, seed, repository, reset, app shell |
+| B1 Launch | #8–#10 | Your name, PIN 000000, ⋮ Reset |
+| B2 List | #11–#14 | Rows, search/filters, Show inactive, swipe Deceased/Restore |
+| B3 Map | #15–#18 | Tiles + outline, pins, callout → Detail, legend |
+| B4 Detail | #19 #20 | Fields, BE dates, mini map, Call/Navigate/Edit |
+| C Form | #21–#26 | Fields, pool prefill, validation, deceased lock, Use my location, photo |
+| E Walkthrough | #27 | Every screen on the iOS Simulator against §6–§7 and Figma |
 
-Total ≈ 1 h 45 min.
+The plan estimated 1 h 45 min (later 2 h 45 min). Actual: first PR 17:16, all features merged by about 19:06, last fix merged 19:52 (ICT). That's 40 PRs, 38 merged; #30 and #32 were closed by a hub merge mistake and replaced by #38 and #39. Per-screen Simulator checks and the walkthrough found the fixes in #54, #58, #63, #65 and #66–#68.
 
 ## 10. Open questions
 
@@ -234,4 +236,6 @@ None open. Previously:
 
 1. ~~Reset on every launch~~ **Resolved:** persist, plus Reset sample data on the PIN screen (§6). Original question: I read "start with 5 records … every time we start the application" as *wipe and reseed on every launch*, which also discards anything added during testing. If you instead want 5 records only on the very first launch, say so. It is a one-line change.
 2. ~~Thai text in data~~ **Resolved:** romanize all sample text. Original question: the UI is English, but the sample names and notes are in Thai script. Keep them in Thai (realistic), or switch to romanized names?
-3. ~~District center and zoom~~ **Resolved:** center 13.7228, 100.5023, zoom 14.5 (§3).
+3. ~~District center and zoom~~ **Resolved:** center 13.7228, 100.5023, zoom 14.5 (§3); the Map tab then fits the district outline (§2, PR #63).
+
+**Known limits (accepted for the prototype):** the `birth_year` CHECK is fixed at 1916–1966, so from 2027 a 60-year-old is rejected (§5). Overlapping pins: the top one takes the tap until you zoom in. `tel:` doesn't work on the Simulator, which shows "Can't place a call on this device.". Reset sample data on the PIN screen works without the PIN. The volunteer name is stored without encryption.
