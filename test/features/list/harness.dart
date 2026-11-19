@@ -56,13 +56,29 @@ Future<ListHarness> pumpListTab(WidgetTester tester, {int seed = 1}) async {
       patients: repo,
       volunteer: volunteer,
       showInactive: showInactive,
-      child: const CupertinoApp(
-        home: ListTab(),
-        onGenerateRoute: Routes.onGenerateRoute,
-      ),
+      child: const CupertinoApp(home: ListTab(), onGenerateRoute: _routes),
     ),
   );
   final h = ListHarness(tester, repo, showInactive);
   await h.settle();
   return h;
+}
+
+/// The app's routes, except Detail is a stub, so these tests don't depend on
+/// the Detail stream's layout.
+Route<void>? _routes(RouteSettings settings) => settings.name == Routes.detail
+    ? CupertinoPageRoute<void>(
+        settings: settings,
+        builder: (_) => DetailStub(settings.arguments! as String),
+      )
+    : Routes.onGenerateRoute(settings);
+
+/// Stands in for DetailScreen; records the patient id it was opened with.
+class DetailStub extends StatelessWidget {
+  const DetailStub(this.patientId, {super.key});
+
+  final String patientId;
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }

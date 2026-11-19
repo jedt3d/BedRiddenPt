@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:bedridden_pt/data/patient.dart';
 import 'package:bedridden_pt/data/patient_repository.dart';
-import 'package:bedridden_pt/features/detail/detail_screen.dart';
 import 'package:bedridden_pt/features/list/list_tab.dart';
 import 'package:bedridden_pt/features/list/patient_row.dart';
 import 'package:bedridden_pt/shared/care_style.dart';
@@ -147,9 +146,6 @@ void main() {
     final p = (await h.db(() => h.repo.list())).first;
     await tester.tap(rowOf(p));
     await tester.pumpAndSettle();
-    expect(
-      tester.widget<DetailScreen>(find.byType(DetailScreen)).patientId,
-      p.id,
-    );
+    expect(tester.widget<DetailStub>(find.byType(DetailStub)).patientId, p.id);
   });
 }
