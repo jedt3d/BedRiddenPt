@@ -68,6 +68,10 @@ void main() {
     PatientRepository repo,
     String id,
   ) async {
+    // A phone-size view (Figma frame width 393 pt), so overflow shows up.
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     SharedPreferences.setMockInitialValues({});
     final volunteer = (await tester.runAsync(VolunteerStore.open))!;
     final showInactive = ValueNotifier(false);
@@ -133,21 +137,22 @@ void main() {
         notes: 'Receives the elderly allowance',
       ),
     );
-    // Tall enough that the lazy list builds every row; wide for the test font.
-    tester.view.physicalSize = const Size(1200, 2400);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
     await pumpDetail(tester, repo, p.id);
+
+    // Header: care-level badge and status (In hospital in indigo).
+    expect(find.text('Bedridden'), findsWidgets);
+    expect(find.text('In hospital'), findsOneWidget);
 
     for (final text in [
       p.fullName,
       '1-1017-00203-45-0',
-      'Other relative',
       p.contactName,
+      'Other relative',
       'Phone 1',
       '063-759-2951',
       'Phone 2',
       '081-234-5678',
+      'Call dials the first phone number.',
       'Somdet Chao Phraya',
       'Soi Itsaraphap 8',
       '13.730103, 100.498575',
@@ -157,22 +162,21 @@ void main() {
       'Elderly caregiver',
       'Bedsore\nAir mattress',
       'Receives the elderly allowance',
-      'Call dials the first phone number.',
     ]) {
+      // The list is lazy: scroll down until the row is built (the texts
+      // are in screen order, top to bottom).
+      for (var i = 0; i < 30 && find.text(text).evaluate().isEmpty; i++) {
+        await tester.drag(find.byType(Scrollable).first, const Offset(0, -200));
+        await tester.pump();
+      }
       expect(find.text(text), findsWidgets, reason: text);
     }
-    // In hospital appears in the header and the Status row.
-    expect(find.text('In hospital'), findsNWidgets(2));
-    expect(find.text('Bedridden'), findsWidgets);
   });
 
   testWidgets('the header wraps at phone width instead of overflowing', (
     tester,
   ) async {
-    // 393 pt (Figma frame width); the test font is far wider than SF Pro.
-    tester.view.physicalSize = const Size(393, 852);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
+    // pumpDetail uses 393 pt; the test font is far wider than SF Pro.
     final (repo, p) = await seeded(tester);
     await pumpDetail(tester, repo, p.id);
     expect(tester.takeException(), isNull);
