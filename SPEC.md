@@ -50,6 +50,7 @@ in the iOS Simulator.
 | Photo files | `path_provider` 2.1.6 | Picked photos are copied into the app documents folder; the database stores the path |
 | Call / navigate | `url_launcher` 6.3.3 | `tel:` and an Apple Maps URL |
 | Volunteer name | `shared_preferences` 2.5.6 | Plain storage, no encryption (accepted). The PIN is the constant `000000` in code, not stored |
+| Tests (dev only) | `sqflite_common_ffi` 2.4.2 (`dev_dependencies`) | Runs the real `data/schema.sql` in an in-memory DB under `flutter test`; not shipped. `data/schema.sql` is listed under `flutter: assets:` and loaded at first launch. New patient ids are UUID v4 from `Random.secure()` (no `uuid` package) |
 
 ### Map decision — Google Maps rejected
 
