@@ -31,6 +31,11 @@ final b = EdgeInsets.symmetric(horizontal: AppSpace.s16, vertical: AppSpace.s8);
 final c = BorderRadius.all(Radius.circular(AppRadius.card));
 final d = AppText.body.copyWith(color: AppColors.labelSecondary);
 final e = EdgeInsets.zero;
+final f = EdgeInsets.only(left: f(AppSpace.s8), top: AppSpace.s4);
+final g = TextStyle(fontSize: big ? AppText.title1.fontSize : AppText.body.fontSize);
+final h = Icon(CupertinoIcons.add);
+final i = AppColors.transparent;
+import 'package:flutter/cupertino.dart';
 ''');
     expect(r.exitCode, 0, reason: '${r.stdout}${r.stderr}');
   });
@@ -45,6 +50,17 @@ final e = EdgeInsets.zero;
     'final a = EdgeInsets.only(\n  left: AppSpace.s8,\n  top: 4,\n);',
     'final a = BorderRadius.circular(12);',
     'final a = BorderRadius.all(Radius.circular(8));',
+    // Review fixes (T1, T2).
+    'final a = Color(4278190080);',
+    'final a = Color.from(alpha: 1, red: 0, green: 0, blue: 0);',
+    'final a = HSLColor.fromAHSL(1, 0, 0, 0);',
+    'final a = HSVColor.fromAHSV(1, 0, 0, 0);',
+    'final a = EdgeInsets.only(left: f(AppSpace.s8), top: 8);',
+    'final a = EdgeInsets.symmetric(\n  horizontal: g(h(x)),\n  vertical: 12,\n);',
+    'final a = TextStyle(fontSize: big ? 20 : AppText.body.fontSize);',
+    'final a = TextStyle(fontSize: AppText.body.fontSize! * 1.2);',
+    "import 'package:flutter/material.dart';",
+    'final a = Icon(Icons.add);',
   ]) {
     test('fails on: $bad', () {
       final r = check(bad);
@@ -54,7 +70,8 @@ final e = EdgeInsets.zero;
 
   test('ignores lib/theme/', () {
     Directory('${dir.path}/theme').createSync();
-    File('${dir.path}/theme/tokens.dart').writeAsStringSync('const a = Color(0xFF000000);');
+    File('${dir.path}/theme/tokens.dart')
+        .writeAsStringSync('const a = Color(0xFF000000);');
     final r = Process.runSync('bash', ['tool/check_tokens.sh', dir.path]);
     expect(r.exitCode, 0, reason: '${r.stdout}${r.stderr}');
   });

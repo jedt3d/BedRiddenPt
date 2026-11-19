@@ -30,6 +30,7 @@ void main() {
 
       final after = await repo.list(showInactive: true);
       expect(after, hasLength(5));
+      expect(await repo.list(), hasLength(5)); // active records only
       final poolIds = {for (final p in repo.pool) p.id};
       expect(
         after.every(

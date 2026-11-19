@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../shared/national_id.dart';
 import 'app_database.dart';
 import 'patient.dart';
 
@@ -31,6 +32,18 @@ class DuplicateNationalIdException implements Exception {
 
   /// The message SPEC §6 shows under the field.
   static const message = 'A patient with this national ID already exists.';
+
+  @override
+  String toString() => message;
+}
+
+/// Saving a national ID that fails the SPEC §5 checksum (or isn't 13 digits).
+class InvalidNationalIdException implements Exception {
+  const InvalidNationalIdException(this.nationalId);
+  final String nationalId;
+
+  /// The message SPEC §7.3 shows under the field.
+  static const message = invalidNationalIdMessage;
 
   @override
   String toString() => message;
@@ -137,18 +150,23 @@ class PatientRepository extends ChangeNotifier {
       _nationalIdExists(_db, nationalId, exceptId: exceptId);
 
   /// A random pool record not yet in the database (by id or national ID), to
-  /// prefill Add. Null when all 50 are registered: Add then opens empty.
+  /// prefill Add, with its status forced to active (SPEC §6). Null when all
+  /// 50 are registered: Add then opens empty.
   Future<Patient?> nextUnusedPoolRecord() async {
     final unused = await _unusedPool(_db);
-    return unused.isEmpty ? null : unused[_random.nextInt(unused.length)];
+    if (unused.isEmpty) return null;
+    return unused[_random.nextInt(unused.length)].copyWith(
+      status: PatientStatus.active,
+    );
   }
 
   // ---- writes ----
 
   /// Inserts [patient] and returns it as saved. [registeredBy] is the
   /// volunteer's name (or [sampleRegisteredBy]); it is set here and never
-  /// changed afterwards. An empty `id` gets a new UUID. Throws
-  /// [DuplicateNationalIdException].
+  /// changed afterwards. An empty `id` gets a new UUID. The care level is
+  /// derived from the ADL score when there is one. Throws
+  /// [InvalidNationalIdException] or [DuplicateNationalIdException].
   Future<Patient> insert(
     Patient patient, {
     required String registeredBy,
@@ -161,23 +179,40 @@ class PatientRepository extends ChangeNotifier {
   }
 
   /// Overwrites the registration (no history). Never changes `id`,
-  /// `registered_by` or `created_at`. Throws [DuplicateNationalIdException].
+  /// `registered_by` or `created_at`. The care level is derived from the ADL
+  /// score when there is one. Status: a deceased patient stays deceased
+  /// (restore is [restoreToActive]), and an edit can't make anyone deceased
+  /// (that is [markDeceased]); setting status deceased throws
+  /// [ArgumentError]. Throws [InvalidNationalIdException] or
+  /// [DuplicateNationalIdException].
   Future<Patient> update(Patient patient) async {
     await _db.transaction((txn) async {
-      if (await _nationalIdExists(
-        txn,
-        patient.nationalId,
-        exceptId: patient.id,
-      )) {
-        throw DuplicateNationalIdException(patient.nationalId);
-      }
-      final n = await txn.update(
+      await _checkNationalId(txn, patient.nationalId, exceptId: patient.id);
+      final stored = await txn.query(
         'patients',
-        {...patient.editableColumns(), 'updated_at': _timestamp()},
+        columns: ['status'],
         where: 'id = ?',
         whereArgs: [patient.id],
       );
-      if (n != 1) throw StateError('No patient with id ${patient.id}');
+      if (stored.isEmpty) throw StateError('No patient with id ${patient.id}');
+      final wasDeceased =
+          stored.single['status'] == PatientStatus.deceased.name;
+      if (!wasDeceased && patient.status == PatientStatus.deceased) {
+        throw ArgumentError.value(
+          patient.status,
+          'status',
+          'Use markDeceased to mark a patient deceased',
+        );
+      }
+      final saved = _withDerivedCareLevel(
+        patient,
+      ).copyWith(status: wasDeceased ? PatientStatus.deceased : patient.status);
+      await txn.update(
+        'patients',
+        {...saved.editableColumns(), 'updated_at': _timestamp()},
+        where: 'id = ?',
+        whereArgs: [patient.id],
+      );
       await txn.delete(
         'patient_phones',
         where: 'patient_id = ?',
@@ -194,21 +229,24 @@ class PatientRepository extends ChangeNotifier {
     return (await getById(patient.id))!;
   }
 
-  /// Swipe → Deceased (SPEC §7).
-  Future<void> markDeceased(String id) =>
-      _setStatus(id, PatientStatus.deceased);
+  /// Swipe → Deceased (SPEC §7). Only changes a patient who isn't deceased
+  /// yet; returns whether it changed anything.
+  Future<bool> markDeceased(String id) =>
+      _setStatus(id, PatientStatus.deceased, onlyIf: "status <> 'deceased'");
 
-  /// Swipe → Restore: back to active (SPEC §7).
-  Future<void> restoreToActive(String id) =>
-      _setStatus(id, PatientStatus.active);
+  /// Swipe → Restore: deceased back to active (SPEC §7). Only changes a
+  /// deceased patient; returns whether it changed anything.
+  Future<bool> restoreToActive(String id) =>
+      _setStatus(id, PatientStatus.active, onlyIf: "status = 'deceased'");
 
-  /// First launch: inserts [sampleSeedCount] random pool records.
+  /// First launch: inserts [sampleSeedCount] random active pool records.
   Future<void> seedSampleData() async {
     await _db.transaction(_seed);
     notifyListeners();
   }
 
-  /// Replaces all patients with [sampleSeedCount] new random pool records.
+  /// Replaces all patients with [sampleSeedCount] new random active pool
+  /// records (SPEC §6).
   /// Only touches the database, so the volunteer's name is kept.
   Future<void> resetSampleData() async {
     await _db.transaction((txn) async {
@@ -221,8 +259,10 @@ class PatientRepository extends ChangeNotifier {
   // ---- internals ----
 
   Future<void> _seed(Transaction txn) async {
-    final unused = await _unusedPool(txn)
-      ..shuffle(_random);
+    final unused = [
+      for (final p in await _unusedPool(txn))
+        if (p.status == PatientStatus.active) p,
+    ]..shuffle(_random);
     for (final p in unused.take(sampleSeedCount)) {
       await _insert(txn, p, registeredBy: sampleRegisteredBy);
     }
@@ -233,11 +273,9 @@ class PatientRepository extends ChangeNotifier {
     Patient patient, {
     required String registeredBy,
   }) async {
-    if (await _nationalIdExists(txn, patient.nationalId)) {
-      throw DuplicateNationalIdException(patient.nationalId);
-    }
+    await _checkNationalId(txn, patient.nationalId);
     final now = _timestamp();
-    final saved = patient.copyWith(
+    final saved = _withDerivedCareLevel(patient).copyWith(
       id: patient.id.isEmpty ? Patient.newId() : patient.id,
       registeredBy: registeredBy,
       createdAt: now,
@@ -270,15 +308,42 @@ class PatientRepository extends ChangeNotifier {
     }
   }
 
-  Future<void> _setStatus(String id, PatientStatus status) async {
+  Future<bool> _setStatus(
+    String id,
+    PatientStatus status, {
+    required String onlyIf,
+  }) async {
     final n = await _db.update(
       'patients',
       {'status': status.name, 'updated_at': _timestamp()},
-      where: 'id = ?',
+      where: 'id = ? AND $onlyIf',
       whereArgs: [id],
     );
-    if (n != 1) throw StateError('No patient with id $id');
+    if (n == 0) {
+      if (await getById(id) == null) throw StateError('No patient with id $id');
+      return false;
+    }
     notifyListeners();
+    return true;
+  }
+
+  /// Care level follows the ADL score bands (SPEC §5) when a score is set.
+  Patient _withDerivedCareLevel(Patient p) {
+    final adl = p.adlScore;
+    return adl == null ? p : p.copyWith(careLevel: CareLevel.fromAdl(adl));
+  }
+
+  Future<void> _checkNationalId(
+    DatabaseExecutor ex,
+    String nationalId, {
+    String? exceptId,
+  }) async {
+    if (!isValidNationalId(nationalId)) {
+      throw InvalidNationalIdException(nationalId);
+    }
+    if (await _nationalIdExists(ex, nationalId, exceptId: exceptId)) {
+      throw DuplicateNationalIdException(nationalId);
+    }
   }
 
   Future<bool> _nationalIdExists(

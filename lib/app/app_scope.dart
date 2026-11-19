@@ -29,6 +29,14 @@ class AppScope extends InheritedWidget {
     return scope!;
   }
 
+  /// Like [of] but doesn't make [context] depend on the scope, so it works
+  /// in `initState` (the scope's objects never change while the app runs).
+  static AppScope read(BuildContext context) {
+    final scope = context.getInheritedWidgetOfExactType<AppScope>();
+    assert(scope != null, 'No AppScope above this context');
+    return scope!;
+  }
+
   @override
   bool updateShouldNotify(AppScope oldWidget) =>
       patients != oldWidget.patients ||
