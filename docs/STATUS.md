@@ -38,7 +38,7 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 | C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | running: #56 #57 #59 #60 merged (#21–#24 closed); #25 in progress (#61) |
 | E Walkthrough | #27 | — | after all |
 
-## Build plan (issue list) — 24 of 28 closed
+## Build plan (issue list) — 25 of 28 closed
 
 Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 8. Figma needed before Phase 2. 
 
@@ -47,12 +47,12 @@ Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 
 | 0.1–0.3 setup (#1–#3) | ✅ closed (PRs #29, #38) |
 | 0.4 design tokens + no-raw-values check (#28) | ✅ closed (#39) |
 | 1.1–1.4 data (#4–#7) | ✅ closed (#33, #35, #34, #36) + review fixes #40 |
-| 2.1–2.3 name / PIN / reset (#8–#10) | ✅ closed (#41, #43, #46); Simulator check in progress |
+| 2.1–2.3 name / PIN / reset (#8–#10) | ✅ closed (#41, #43, #46); Simulator check passed |
 | 3.1–3.4 list, incl. swipe deceased/restore (#11–#14) | ✅ closed (#42, #48, #49, #52, + #55); Simulator check pending |
 | 4.1–4.4 map (#15–#18) | ✅ closed (#44, #50, #53, #51); Simulator check pending |
 | 5.1–5.2 detail (#19–#20) | ✅ closed (#45, #47, + fixes #54, #58); Simulator check done |
 | 6.1–6.4 form (#21–#24) | ✅ closed (#56, #57, #59, #60) |
-| 7.1–7.2 location / photo (#25–#26) | in progress (stream C; PR #61 open) |
+| 7.1–7.2 location / photo (#25–#26) | #25 ✅ closed (#61, Simulator ±5 m + Khlong Ton Sai verified); #26 PR #62 open (Simulator pass; 2 UI fixes being added) |
 | 8 Simulator walkthrough (#27) | todo (after all) |
 
 Hub rule: this table is regenerated from GitHub whenever a PR is merged.
@@ -65,7 +65,7 @@ Red from #45 to #54: the Detail header Row overflowed at phone width and the Lis
 
 - Move `CareLevelBadge` from `lib/features/detail/` to `lib/shared/` (Form imports it across features).
 - Token gaps: accent tint 0.15 (PIN avatar) and 0.1 (form banner) are local consts.
-- Simulator: B1's check paused at 2026-11-19 because someone else (likely the user) used it; resume on the user's OK.
+- Simulator queue: B3 (now) → B2. Done: B4, B1, C.
 
 - Back button on Detail/Add/Edit shows "<" without "Patients": set route titles in `lib/app/routes.dart`.
 - Delete `lib/app/placeholder_body.dart` once no screen uses it.
