@@ -17,10 +17,17 @@ import 'package:bedridden_pt/features/list/list_tab.dart';
 import '../../data/test_db.dart';
 
 class FormHarness {
-  FormHarness(this.tester, this.repo);
+  FormHarness(this.tester, this.repo, this._app);
 
   final WidgetTester tester;
   final PatientRepository repo;
+  final Widget _app;
+
+  /// Pumps a fresh app on the same database, like an app restart.
+  Future<void> rebuildApp() async {
+    await tester.pumpWidget(KeyedSubtree(key: UniqueKey(), child: _app));
+    await settle();
+  }
 
   BuildContext get _context => tester.element(find.byType(ListTab));
 
@@ -103,8 +110,9 @@ Future<FormHarness> pumpFormHarness(
   int seed = 1,
   bool seedData = true,
 }) async {
+  // iPhone 16 size, so overflows at phone width fail the tests.
   tester.view.devicePixelRatio = 3;
-  tester.view.physicalSize = const Size(393 * 3, 1600 * 3);
+  tester.view.physicalSize = const Size(393 * 3, 852 * 3);
   addTearDown(tester.view.reset);
   formClock = () => DateTime(2026, 11, 20);
   addTearDown(() => formClock = DateTime.now);
@@ -117,18 +125,17 @@ Future<FormHarness> pumpFormHarness(
   addTearDown(() => tester.runAsync(repo.close));
   final showInactive = ValueNotifier(false);
   addTearDown(showInactive.dispose);
-  await tester.pumpWidget(
-    AppScope(
-      patients: repo,
-      volunteer: volunteer,
-      showInactive: showInactive,
-      child: const CupertinoApp(
-        home: ListTab(),
-        onGenerateRoute: Routes.onGenerateRoute,
-      ),
+  final app = AppScope(
+    patients: repo,
+    volunteer: volunteer,
+    showInactive: showInactive,
+    child: const CupertinoApp(
+      home: ListTab(),
+      onGenerateRoute: Routes.onGenerateRoute,
     ),
   );
-  final h = FormHarness(tester, repo);
+  await tester.pumpWidget(app);
+  final h = FormHarness(tester, repo, app);
   await h.settle();
   return h;
 }

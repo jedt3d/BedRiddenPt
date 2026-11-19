@@ -417,3 +417,18 @@ class FormBanner extends StatelessWidget {
     );
   }
 }
+
+/// A section header or footer: footnote, secondary label (Figma frame 19).
+/// Without it, CupertinoListSection draws headers as large bold titles
+/// (seen on the Simulator; Detail does the same).
+class Caption extends StatelessWidget {
+  const Caption(this.text, {super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text,
+    style: AppText.footnote.copyWith(color: AppColors.labelSecondary),
+  );
+}

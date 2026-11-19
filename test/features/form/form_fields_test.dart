@@ -45,8 +45,11 @@ void main() {
     expect(textOf('Full name'), p.fullName);
     expect(textOf('Born (B.E.)'), '${p.birthYear + 543}');
     expect(find.text('(age ${2026 - p.birthYear})'), findsOneWidget);
+    await h.scrollTo(find.text(p.contactRelation.label));
     expect(find.text(p.contactRelation.label), findsOneWidget);
+    await h.scrollTo(find.text(p.mainCondition.label));
     expect(find.text(p.mainCondition.label), findsOneWidget);
+    await h.scrollTo(find.text('${p.adlScore}'));
     expect(find.text('${p.adlScore}'), findsOneWidget);
     await h.scrollTo(find.text('Registered by'));
     expect(find.text('Registered by'), findsOneWidget);
