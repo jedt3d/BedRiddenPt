@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import '../../app/app_scope.dart';
 import '../../data/patient.dart';
 import '../../data/patient_repository.dart';
-import '../../shared/care_style.dart';
+import '../../shared/care_level_badge.dart';
 import '../../shared/labels.dart';
 import '../../shared/national_id.dart';
 import '../../shared/patient_avatar.dart';
@@ -361,54 +361,6 @@ class _SexText extends StatelessWidget {
             style: style.copyWith(color: AppColors.labelSecondary),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// The tinted care-level badge with a dot, e.g. "● Bedridden".
-class CareLevelBadge extends StatelessWidget {
-  const CareLevelBadge({super.key, required this.level});
-
-  final CareLevel level;
-
-  @override
-  Widget build(BuildContext context) {
-    final style = CareStyle.of(level);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: style.badgeBackground,
-        borderRadius: BorderRadius.circular(AppRadius.full),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpace.s8,
-          vertical: AppSpace.s2,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: style.dot,
-                shape: BoxShape.circle,
-              ),
-              child: const SizedBox(width: AppSpace.s6, height: AppSpace.s6),
-            ),
-            const SizedBox(width: AppSpace.s4),
-            // Shrinks with an ellipsis when its row is tight (large text).
-            Flexible(
-              child: Text(
-                level.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppText.footnoteEmphasized.copyWith(
-                  color: style.badgeText,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
