@@ -37,10 +37,16 @@ class ListHarness {
 }
 
 /// Seeds the 5 sample patients (random seed [seed]) and shows ListTab.
-Future<ListHarness> pumpListTab(WidgetTester tester, {int seed = 1}) async {
-  // A tall iPhone-width screen, so every row is on screen.
+/// [home] replaces ListTab (e.g. HomeScreen); [height] is the screen height
+/// in points (default tall enough for every row).
+Future<ListHarness> pumpListTab(
+  WidgetTester tester, {
+  int seed = 1,
+  Widget home = const ListTab(),
+  double height = 1600,
+}) async {
   tester.view.devicePixelRatio = 3;
-  tester.view.physicalSize = const Size(393 * 3, 1600 * 3);
+  tester.view.physicalSize = Size(393 * 3, height * 3);
   addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues({'volunteer_name': 'Nok'});
   final (repo, volunteer) = (await tester.runAsync(() async {
@@ -56,7 +62,7 @@ Future<ListHarness> pumpListTab(WidgetTester tester, {int seed = 1}) async {
       patients: repo,
       volunteer: volunteer,
       showInactive: showInactive,
-      child: const CupertinoApp(home: ListTab(), onGenerateRoute: _routes),
+      child: CupertinoApp(home: home, onGenerateRoute: _routes),
     ),
   );
   final h = ListHarness(tester, repo, showInactive);
