@@ -32,11 +32,11 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 | A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | **merged** (#29, #38, #39, #33–#37, #40 review fixes); issues #1–#7, #28 closed; branches deleted. Pending: Simulator check on a fresh install (5 active seeded, relaunch same ids, name → PIN → Home) |
 | Expert review | #6 repository, #28 tokens, shell | expert | done, fixes merged in #40: no blockers; 2 high + 6 medium + token fixes sent to stream A as one fix PR (shared `lib/shared/`, `lib/geo/`, repository guards). Hub decision: seed/prefill from active pool only (SPEC §6) |
 | B1 Launch | #8 #9 #10 | `local_30dee9da-0a6c-4d7f-88c0-272ca65919a1` | code complete: #41 #43 #46 merged; **holds the Simulator** |
-| B2 List | #11–#14 | `local_c986f8ba-c4b0-4f23-9746-192822d2efd1` | **done**: #42 #48 #49 #52 #55 merged; Simulator queued (after B3) |
+| B2 List | #11–#14 | `local_c986f8ba-c4b0-4f23-9746-192822d2efd1` | **done**: #42 #48 #49 #52 #55 #65 merged; Simulator check passed (tab-bar overlap fixed in #65) |
 | B3 Map | #15 #16 #18, then #17 after #19 | `local_7bc2fad5-26bd-492c-bebe-db9f81c515f6` | **done**: #44 #50 #51 #53 #63 merged; Simulator check passed (fit fix in #63) |
 | B4 Detail | #19 #20 | `local_6ae3d0a3-a60e-402e-a4f9-6b3926fa0e8c` | **done**: #45 #47 #54 merged; Simulator check done (tiles, fields, Navigate OK; Call alert expected on Simulator) |
 | C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | **done**: #56 #57 #59 #60 #61 #62 merged (#21–#26 closed); Simulator checks passed |
-| E Walkthrough | #27 | `local_1fbb5e06-c23e-480f-a9e6-4d98b9715191` | preparing checklist + build; Simulator after B2 |
+| E Walkthrough | #27 | `local_1fbb5e06-c23e-480f-a9e6-4d98b9715191` | **holds the Simulator**; 33-step checklist (e-sim/CHECKLIST.md) |
 
 ## Build plan (issue list) — 27 of 28 closed
 
@@ -48,7 +48,7 @@ Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 
 | 0.4 design tokens + no-raw-values check (#28) | ✅ closed (#39) |
 | 1.1–1.4 data (#4–#7) | ✅ closed (#33, #35, #34, #36) + review fixes #40 |
 | 2.1–2.3 name / PIN / reset (#8–#10) | ✅ closed (#41, #43, #46); Simulator check passed |
-| 3.1–3.4 list, incl. swipe deceased/restore (#11–#14) | ✅ closed (#42, #48, #49, #52, + #55); Simulator check pending |
+| 3.1–3.4 list, incl. swipe deceased/restore (#11–#14) | ✅ closed (#42, #48, #49, #52, + #55, #65); Simulator check passed |
 | 4.1–4.4 map (#15–#18) | ✅ closed (#44, #50, #53, #51, fit fix #63); Simulator check passed |
 | 5.1–5.2 detail (#19–#20) | ✅ closed (#45, #47, + fixes #54, #58); Simulator check done |
 | 6.1–6.4 form (#21–#24) | ✅ closed (#56, #57, #59, #60) |
@@ -66,7 +66,7 @@ Red from #45 to #54: the Detail header Row overflowed at phone width and the Lis
 - ✅ Done in #64: back button reads "< Patients" / "< Patient"; `CareLevelBadge` moved to `lib/shared/`; `placeholder_body.dart` deleted.
 - ✅ #63 (B3 Simulator finding): the Map tab fits the district outline (SPEC §2 updated).
 - ✅ `main` protected 2026-11-19 (user's OK): required check `check`, branch must be up to date; admins not enforced (hub STATUS commits go direct).
-- Simulator queue: B2 (now) → E walkthrough. Done: B4, B1, C, B3.
+- Simulator: E walkthrough (now). All per-stream checks done: B4, B1, C, B3, B2.
 
 ## Token gaps (logged, not blocking)
 
