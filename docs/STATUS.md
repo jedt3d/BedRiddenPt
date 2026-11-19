@@ -31,10 +31,10 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 |---|---|---|---|
 | A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | **merged** (#29, #38, #39, #33–#37, #40 review fixes); issues #1–#7, #28 closed; branches deleted. Pending: Simulator check on a fresh install (5 active seeded, relaunch same ids, name → PIN → Home) |
 | Expert review | #6 repository, #28 tokens, shell | expert | done, fixes merged in #40: no blockers; 2 high + 6 medium + token fixes sent to stream A as one fix PR (shared `lib/shared/`, `lib/geo/`, repository guards). Hub decision: seed/prefill from active pool only (SPEC §6) |
-| B1 Launch | #8 #9 #10 | `local_30dee9da-0a6c-4d7f-88c0-272ca65919a1` | running (started after stream A's Simulator check) |
-| B2 List | #11–#14 | `local_c986f8ba-c4b0-4f23-9746-192822d2efd1` | running (started after stream A's Simulator check) |
-| B3 Map | #15 #16 #18, then #17 after #19 | `local_7bc2fad5-26bd-492c-bebe-db9f81c515f6` | running (started after stream A's Simulator check) |
-| B4 Detail | #19 #20 | `local_6ae3d0a3-a60e-402e-a4f9-6b3926fa0e8c` | running (started after stream A's Simulator check) |
+| B1 Launch | #8 #9 #10 | `local_30dee9da-0a6c-4d7f-88c0-272ca65919a1` | running: #41 (#8), #43 (#9) merged; #46 (#10) open |
+| B2 List | #11–#14 | `local_c986f8ba-c4b0-4f23-9746-192822d2efd1` | running: #42 (#11) merged; #48 (#12) open |
+| B3 Map | #15 #16 #18, then #17 after #19 | `local_7bc2fad5-26bd-492c-bebe-db9f81c515f6` | running: #44 (#15) open |
+| B4 Detail | #19 #20 | `local_6ae3d0a3-a60e-402e-a4f9-6b3926fa0e8c` | running: #45 (#19) and #47 (#20) open |
 | C Form | #21–#24 | — | after #20 |
 | D Location + photo | #25 #26 | — | after #21 |
 | E Walkthrough | #27 | — | after all |
@@ -55,6 +55,10 @@ Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 
 | 6.1–6.4 form (#21–#24) | todo |
 | 7.1–7.2 location / photo (#25–#26) | todo |
 | 8 Simulator walkthrough (#27) | todo |
+
+## Token gaps (logged, not blocking)
+
+- Avatar tint: accent at 15 % has no opacity token; B1 uses a local const in `pin_screen.dart`.
 
 ## Risks
 
