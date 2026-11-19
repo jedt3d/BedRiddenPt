@@ -8,7 +8,7 @@ Updated 2026-11-19 by the hub session. ✅ = checked on disk · ⚠️ = not con
 |---|---|---|---|
 | map-geo | Geo assets + map spike | ✅ `assets/geo/` (boundary 1, subdistricts 4, water 2, roads 386 ways / 206 distinct `name:en`); helpers in `spikes/map_geo/lib/geo/`; spike `flutter test` 5/5 pass (re-run by hub); spike's asset copies identical to `assets/`. Simulator run: screenshots in `spikes/map_geo/docs/`, not re-run | idle, reports to hub |
 | sample-data | 50-patient pool | ✅ `assets/bootstrap.json` 50 records, 25/25, ages 60–110 (4 aged 100+), 10/25/15 care levels, 43/3/2/2 status; `data/patients.csv` 50 rows; 50 avatars. Generator imports the spike's `lib/geo/` helpers (don't move them) | idle, reports to hub |
-| figma-proto | Figma frames for every screen | [Figma file](https://www.figma.com/design/zHNLIMNEn1XPcNwBTZGw7B), 25 frames, 67 links, updated to the fixed-PIN/name screen and swipe-restore (user-approved). 15 design decisions handed off for SPEC (notes: `figma-prototype.md`). Hub checked the frame list (25) and the texts of frames 07, 13, 16, 17, 22, 23, 25 against SPEC | done |
+| figma-proto | Figma prototype | **Updated to the built app** (main a071a83): [Figma file](https://www.figma.com/design/zHNLIMNEn1XPcNwBTZGw7B), 51 frames (35 screens + 9 overlays + 7 reference states), 179 links, 4 flows (First launch, Returning volunteer, Add when the pool is used up, Detail without a phone). Not covered: system UI (keyboard, permission prompt, Apple Maps, photo picker), real OSM tiles, empty-form required errors, In hospital/Moved edit states. Tokens changed → `design/tokens-v2.json`, issue #69 | done |
 
 Matt Pocock skills (`~/.claude/skills/`: to-tickets, triage, to-spec, wayfinder, grill-with-docs, handoff) are owned by the hub. No ADRs yet; candidates: "one registration, no visit history", "no delete, soft statuses".
 
@@ -70,7 +70,7 @@ Red from #45 to #54: the Detail header Row overflowed at phone width and the Lis
 
 ## Token gaps (logged, not blocking)
 
-- Avatar tint: accent at 15 % has no opacity token; B1 uses a local const in `pin_screen.dart`.
+- Avatar tint (0.15, `pin_screen.dart`) and form banner tint (0.1) are local consts; Figma tokens v2 adds `accentTint`/`accentSubtle`. Migration: issue #69 (not done today; it renames constants the app uses).
 
 ## Risks
 
