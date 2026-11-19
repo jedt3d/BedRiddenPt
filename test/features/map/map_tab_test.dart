@@ -355,4 +355,97 @@ void main() {
       moved.id,
     );
   });
+
+  testWidgets('pins near the left and right edges: the callout stays inside '
+      'the map and over its pin, even with a long name', (tester) async {
+    tester.view.physicalSize = const Size(402, 874);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await pumpMap(tester);
+    await tester.pump(); // the camera fit lands on the next frame
+
+    const longName = 'Somboonsak Wongsuwannakul-Chaiyaphumphithak';
+    final map = tester.getRect(find.byType(FlutterMap));
+    for (final x in [12.0, map.width - 12]) {
+      final camera = MapCamera.of(tester.element(find.byType(PolygonLayer)));
+      final at = camera.screenOffsetToLatLng(Offset(x, map.height / 2));
+      final moved = (await tester.runAsync(() async {
+        final p = (await repo.list()).first;
+        return repo.update(
+          p.copyWith(fullName: longName, lat: at.latitude, lng: at.longitude),
+        );
+      }))!;
+      final pinFinder = find.byKey(ValueKey(moved.id));
+      await settle(
+        tester,
+        () =>
+            pinFinder.evaluate().isNotEmpty &&
+            (tester.getCenter(pinFinder).dx - (map.left + x)).abs() < 1,
+      );
+
+      await tester.tap(pinFinder);
+      await tester.pump();
+      expect(tester.takeException(), isNull); // no overflow
+      final callout = tester.getRect(find.byType(MapCallout));
+      final pin = tester.getRect(pinFinder);
+      expect(callout.left, greaterThanOrEqualTo(map.left), reason: 'x=$x');
+      expect(callout.right, lessThanOrEqualTo(map.right), reason: 'x=$x');
+      expect(callout.left, lessThanOrEqualTo(pin.center.dx), reason: 'x=$x');
+      expect(callout.right, greaterThanOrEqualTo(pin.center.dx));
+      expect(callout.bottom, lessThanOrEqualTo(pin.top)); // still above
+
+      // The name still opens Detail.
+      await tester.tap(find.text(longName));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<DetailScreen>(find.byType(DetailScreen)).patientId,
+        moved.id,
+      );
+      Navigator.of(tester.element(find.byType(DetailScreen))).pop();
+      await tester.pumpAndSettle();
+    }
+  });
+
+  group('CalloutLayout', () {
+    const map = Size(402, 520);
+    const callout = Size(200, 51);
+
+    test('centred above the pin in the middle of the map', () {
+      final o = CalloutLayout(const Offset(201, 300))
+          .getPositionForChild(map, callout);
+      expect(o.dx, 201 - callout.width / 2);
+      expect(
+        o.dy + callout.height + CalloutLayout.gap + MapPin.size.height,
+        300,
+      );
+    });
+
+    test('below the tip when there is no room above', () {
+      final o = CalloutLayout(const Offset(201, 40))
+          .getPositionForChild(map, callout);
+      expect(o.dy, 40 + CalloutLayout.gap);
+    });
+
+    test('clamped to the left and right edges', () {
+      expect(
+        CalloutLayout(const Offset(5, 300))
+            .getPositionForChild(map, callout)
+            .dx,
+        CalloutLayout.margin,
+      );
+      expect(
+        CalloutLayout(const Offset(400, 300))
+                .getPositionForChild(map, callout)
+                .dx +
+            callout.width,
+        map.width - CalloutLayout.margin,
+      );
+    });
+
+    test('never wider than the map less its margins', () {
+      final c = const CalloutLayout(Offset.zero)
+          .getConstraintsForChild(BoxConstraints.loose(const Size(150, 520)));
+      expect(c.maxWidth, 150 - 2 * CalloutLayout.margin);
+    });
+  });
 }

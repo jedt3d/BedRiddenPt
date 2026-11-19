@@ -143,55 +143,63 @@ class _MapTabState extends State<MapTab> {
   }
 }
 
-/// The name callout of the selected pin. Above the pin, as in Figma frame
-/// 15, unless the pin is too close to the map's top edge for it to fit:
-/// then below the pin's tip, so the whole callout stays visible.
+/// The name callout of the selected pin, kept inside the map: above the pin
+/// as in Figma frame 15, or below its tip when there's no room above; moved
+/// sideways near the left and right edges, but always over the pin.
 class _CalloutLayer extends StatelessWidget {
   const _CalloutLayer({required this.patient, required this.onTap});
 
   final Patient patient;
   final VoidCallback onTap;
 
-  // The callout's box: wide enough for a long name (the text ellipsizes),
-  // tall enough for its two lines; empty space in it isn't hit.
-  static const _width = 260.0;
-  static const _height = 64.0;
-  static const _gap = AppSpace.s7;
-
-  /// Whether a callout above a pin whose tip is [tipY] pt below the map's
-  /// top edge would be cut off.
-  static bool fitsAbove(double tipY) =>
-      tipY >= MapPin.size.height + _gap + _height;
-
   @override
   Widget build(BuildContext context) {
-    final point = LatLng(patient.lat, patient.lng);
-    final tipY = MapCamera.of(context).latLngToScreenOffset(point).dy;
-    final callout = MapCallout(patient: patient, onTap: onTap);
-    final above = fitsAbove(tipY);
-    return MarkerLayer(
-      markers: [
-        Marker(
-          point: point,
-          width: _width,
-          height: above ? _height + _gap + MapPin.size.height : _height + _gap,
-          alignment: above ? Alignment.topCenter : Alignment.bottomCenter,
-          child: Column(
-            mainAxisAlignment: above
-                ? MainAxisAlignment.end
-                : MainAxisAlignment.start,
-            children: above
-                ? [
-                    callout,
-                    const SizedBox(height: _gap),
-                    SizedBox(height: MapPin.size.height),
-                  ]
-                : [const SizedBox(height: _gap), callout],
-          ),
-        ),
-      ],
+    final tip = MapCamera.of(context)
+        .latLngToScreenOffset(LatLng(patient.lat, patient.lng));
+    return CustomSingleChildLayout(
+      delegate: CalloutLayout(tip),
+      child: MapCallout(patient: patient, onTap: onTap),
     );
   }
+}
+
+/// Places a callout of any size for a pin whose tip is at [tip] in a map of
+/// the layout's size. Empty space around the callout isn't hit-tested.
+class CalloutLayout extends SingleChildLayoutDelegate {
+  const CalloutLayout(this.tip);
+
+  /// The pin's tip, in map coordinates.
+  final Offset tip;
+
+  /// Widest callout (long names ellipsize).
+  static const maxWidth = 260.0;
+
+  /// Space between the pin and the callout.
+  static const gap = AppSpace.s7;
+
+  /// Least space between the callout and the map's left and right edges.
+  static const margin = AppSpace.s8;
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) =>
+      BoxConstraints(
+        maxWidth: (constraints.maxWidth - 2 * margin).clamp(0, maxWidth),
+        maxHeight: constraints.maxHeight,
+      );
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    final aboveTop = tip.dy - MapPin.size.height - gap - childSize.height;
+    final top = aboveTop >= 0 ? aboveTop : tip.dy + gap;
+    final maxLeft = size.width - margin - childSize.width;
+    final left = maxLeft < margin
+        ? margin
+        : (tip.dx - childSize.width / 2).clamp(margin, maxLeft);
+    return Offset(left, top);
+  }
+
+  @override
+  bool shouldRelayout(CalloutLayout old) => old.tip != tip;
 }
 
 /// The "Show inactive" switch and its footer (Figma frame 14).
