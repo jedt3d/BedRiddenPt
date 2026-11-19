@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to record where a patient lives when you register them.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>A photo from your library can be used as the patient's picture.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>The camera is used to take the patient's picture.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
