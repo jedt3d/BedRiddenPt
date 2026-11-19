@@ -28,7 +28,10 @@ void main() {
   // Colours: the semantic set, named by its "flutter" field.
   out
     ..writeln('/// Semantic colours (Figma "color" collection).')
-    ..writeln('abstract final class AppColors {');
+    ..writeln('abstract final class AppColors {')
+    ..writeln('  /// Fully transparent (not a Figma variable; for "no colour").')
+    ..writeln('  static const Color transparent = Color(0x00000000);')
+    ..writeln();
   final colors = json['color'] as Map<String, dynamic>;
   for (final MapEntry(key: token, value: v as Map<String, dynamic>) in colors.entries) {
     final name = (v['flutter'] as String).replaceFirst('AppColors.', '');

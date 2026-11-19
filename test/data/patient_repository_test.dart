@@ -219,4 +219,115 @@ void main() {
     await repo.restoreToActive(p.id);
     expect(n, 4);
   });
+
+  group('review fixes', () {
+    test(
+      'insert and update derive the care level from the ADL score',
+      () async {
+        final p = repo.pool.firstWhere((p) => p.careLevel == CareLevel.social);
+        final saved = await repo.insert(
+          p.copyWith(adlScore: () => 2),
+          registeredBy: 'Nok',
+        );
+        expect(saved.careLevel, CareLevel.bedridden);
+        expect((await repo.getById(p.id))!.careLevel, CareLevel.bedridden);
+        final updated = await repo.update(
+          saved.copyWith(adlScore: () => 8, careLevel: CareLevel.social),
+        );
+        expect(updated.careLevel, CareLevel.homebound);
+      },
+    );
+
+    test('a bad national ID throws InvalidNationalIdException', () async {
+      final p = repo.pool.first;
+      final bad =
+          '${p.nationalId.substring(0, 12)}'
+          '${(int.parse(p.nationalId[12]) + 1) % 10}';
+      await expectLater(
+        repo.insert(p.copyWith(nationalId: bad), registeredBy: 'Nok'),
+        throwsA(isA<InvalidNationalIdException>()),
+      );
+      await expectLater(
+        repo.insert(p.copyWith(nationalId: '123'), registeredBy: 'Nok'),
+        throwsA(isA<InvalidNationalIdException>()),
+      );
+      final saved = await repo.insert(p, registeredBy: 'Nok');
+      await expectLater(
+        repo.update(saved.copyWith(nationalId: bad)),
+        throwsA(isA<InvalidNationalIdException>()),
+      );
+      expect(
+        InvalidNationalIdException.message,
+        "This national ID isn't valid. Check the 13 digits.",
+      );
+    });
+
+    test(
+      'markDeceased and restoreToActive only change the right statuses',
+      () async {
+        final p = await repo.insert(
+          firstWith((p) => p.status == PatientStatus.active),
+          registeredBy: 'Nok',
+        );
+        var n = 0;
+        repo.addListener(() => n++);
+        expect(await repo.restoreToActive(p.id), isFalse);
+        expect(await repo.markDeceased(p.id), isTrue);
+        expect(await repo.markDeceased(p.id), isFalse);
+        expect(n, 1);
+        expect(
+          () => repo.markDeceased('00000000-0000-4000-8000-000000000000'),
+          throwsStateError,
+        );
+      },
+    );
+
+    test('update keeps a deceased status and refuses to set one', () async {
+      final active = await repo.insert(
+        firstWith((p) => p.status == PatientStatus.active),
+        registeredBy: 'Nok',
+      );
+      await expectLater(
+        repo.update(active.copyWith(status: PatientStatus.deceased)),
+        throwsArgumentError,
+      );
+      expect((await repo.getById(active.id))!.status, PatientStatus.active);
+      final moved = await repo.update(
+        active.copyWith(status: PatientStatus.moved),
+      );
+      expect(moved.status, PatientStatus.moved);
+
+      await repo.markDeceased(active.id);
+      final edited = await repo.update(
+        active.copyWith(notes: 'edited', status: PatientStatus.active),
+      );
+      expect(edited.notes, 'edited');
+      expect(edited.status, PatientStatus.deceased);
+      // Saving a deceased patient's form unchanged is fine.
+      await repo.update(edited.copyWith(notes: 'again'));
+    });
+
+    test('seed picks active pool records only', () async {
+      await repo.seedSampleData();
+      final seeded = await repo.list(showInactive: true);
+      expect(seeded, hasLength(5));
+      expect(seeded.every((p) => p.status == PatientStatus.active), isTrue);
+      expect(await repo.list(), hasLength(5));
+    });
+
+    test('nextUnusedPoolRecord forces the status to active', () async {
+      for (final p in repo.pool.where(
+        (p) => p.status != PatientStatus.deceased,
+      )) {
+        await repo.insert(p, registeredBy: 'Nok');
+      }
+      // Only the 3 deceased pool records are left.
+      final next = (await repo.nextUnusedPoolRecord())!;
+      expect(
+        repo.pool.firstWhere((p) => p.id == next.id).status,
+        PatientStatus.deceased,
+      );
+      expect(next.status, PatientStatus.active);
+    });
+  });
 }

@@ -8,6 +8,9 @@ import 'package:flutter/widgets.dart';
 
 /// Semantic colours (Figma "color" collection).
 abstract final class AppColors {
+  /// Fully transparent (not a Figma variable; for "no colour").
+  static const Color transparent = Color(0x00000000);
+
   /// `label/primary` = `black` #000000.
   static const Color labelPrimary = Color(0xFF000000);
 

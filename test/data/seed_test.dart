@@ -27,6 +27,8 @@ void main() {
     final first = await launch();
     final seeded = await ids(first);
     expect(seeded, hasLength(5));
+    // Seeded from active pool records only: 5 show with Show inactive off.
+    expect(await first.list(), hasLength(5));
     final poolIds = {for (final p in first.pool) p.id};
     expect(seeded.every(poolIds.contains), isTrue);
     final all = await first.list(showInactive: true);

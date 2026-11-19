@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/tool/hooks/claude_stop.sh"
+            "command": "root=$(git rev-parse --show-toplevel 2>/dev/null || echo \"$CLAUDE_PROJECT_DIR\"); [ -x \"$root/tool/hooks/claude_stop.sh\" ] || exit 0; \"$root/tool/hooks/claude_stop.sh\""
           }
         ]
       }
