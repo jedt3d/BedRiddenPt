@@ -30,6 +30,26 @@ String formatPhoneInput(String input) {
   return '${d.substring(0, 3)}-${d.substring(3, 6)}-${d.substring(6)}';
 }
 
+/// Ages the app accepts (SPEC §5).
+const minAge = 60;
+const maxAge = 110;
+
+/// The fields that can show a validation message.
+enum DraftField {
+  nationalId,
+  fullName,
+  sex,
+  born,
+  subdistrict,
+  coordinates,
+  contactName,
+  relation,
+  phones,
+  adlScore,
+  mainCondition,
+  livingSituation,
+}
+
 String phoneDigits(String input) => input.replaceAll(RegExp(r'[^0-9]'), '');
 
 class FormDraft {
@@ -145,22 +165,56 @@ class FormDraft {
       if (phoneDigits(c.text).isNotEmpty) phoneDigits(c.text),
   ];
 
-  /// Whether every required value is filled in.
-  bool get isComplete =>
-      nationalIdDigits(nationalId.text).length == 13 &&
-      fullName.text.trim().isNotEmpty &&
-      sex != null &&
-      birthYear != null &&
-      subdistrict != null &&
-      lat != null &&
-      lng != null &&
-      contactName.text.trim().isNotEmpty &&
-      relation != null &&
-      careLevel != null &&
-      mainCondition != null &&
-      livingSituation != null;
+  /// Validation messages by field (SPEC §5, §7.3); empty when the draft can
+  /// be saved. Duplicate national IDs are found by the repository on Save.
+  Map<DraftField, String> errors() {
+    final e = <DraftField, String>{};
+    final id = nationalIdDigits(nationalId.text);
+    if (id.length != 13) {
+      e[DraftField.nationalId] = 'Enter the 13-digit national ID.';
+    } else if (!isValidNationalId(id)) {
+      e[DraftField.nationalId] = invalidNationalIdMessage;
+    }
+    if (fullName.text.trim().isEmpty) {
+      e[DraftField.fullName] = 'Enter the patient’s full name.';
+    }
+    if (sex == null) e[DraftField.sex] = 'Choose male or female.';
+    final year = formClock().year;
+    final born = birthYear;
+    if (born == null) {
+      e[DraftField.born] = 'Enter the birth year in B.E.';
+    } else if (year - born < minAge || year - born > maxAge) {
+      e[DraftField.born] =
+          'Age must be $minAge–$maxAge: born '
+          '${year - maxAge + 543}–${year - minAge + 543} B.E.';
+    }
+    if (subdistrict == null) {
+      e[DraftField.subdistrict] = 'Choose a subdistrict.';
+    }
+    if (lat == null || lng == null) {
+      e[DraftField.coordinates] = 'Tap Use my location.';
+    }
+    if (contactName.text.trim().isEmpty) {
+      e[DraftField.contactName] = 'Enter the contact person’s name.';
+    }
+    if (relation == null) e[DraftField.relation] = 'Choose a relationship.';
+    if (phones.any((c) {
+      final n = phoneDigits(c.text).length;
+      return n != 0 && n != 10;
+    })) {
+      e[DraftField.phones] = 'Phone numbers have 10 digits.';
+    }
+    if (careLevel == null) e[DraftField.adlScore] = 'Set the ADL score.';
+    if (mainCondition == null) {
+      e[DraftField.mainCondition] = 'Choose a main condition.';
+    }
+    if (livingSituation == null) {
+      e[DraftField.livingSituation] = 'Choose a living situation.';
+    }
+    return e;
+  }
 
-  /// The patient to save. Call only when [isComplete].
+  /// The patient to save. Call only when [errors] is empty.
   Patient toPatient() {
     final b = base;
     return Patient(

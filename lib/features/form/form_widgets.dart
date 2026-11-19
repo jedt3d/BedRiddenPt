@@ -22,14 +22,18 @@ class FieldRow extends StatelessWidget {
     required this.label,
     required this.child,
     this.below,
+    this.error,
   });
 
   final IconData icon;
   final String label;
   final Widget child;
 
-  /// Shown under the row, e.g. an error message.
+  /// Shown under the row, e.g. the care-need chips.
   final Widget? below;
+
+  /// A validation message shown in red under the row (Figma frame 22).
+  final String? error;
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +72,40 @@ class FieldRow extends StatelessWidget {
             ],
           ),
           ?below,
+          if (error != null) FieldError(text: error!),
+        ],
+      ),
+    );
+  }
+}
+
+/// "(!) A patient with this national ID already exists." (Figma frame 22).
+class FieldError extends StatelessWidget {
+  const FieldError({super.key, required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpace.s6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            CupertinoIcons.exclamationmark_circle_fill,
+            size: AppSpace.s16,
+            color: AppColors.actionDestructive,
+          ),
+          const SizedBox(width: AppSpace.s6),
+          Expanded(
+            child: Text(
+              text,
+              style: AppText.footnote.copyWith(
+                color: AppColors.actionDestructive,
+              ),
+            ),
+          ),
         ],
       ),
     );
