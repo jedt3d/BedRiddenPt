@@ -35,10 +35,10 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 | B2 List | #11–#14 | `local_c986f8ba-c4b0-4f23-9746-192822d2efd1` | **done**: #42 #48 #49 #52 #55 merged; Simulator queued (after B3) |
 | B3 Map | #15 #16 #18, then #17 after #19 | `local_7bc2fad5-26bd-492c-bebe-db9f81c515f6` | code complete: #44 #50 #51 #53 merged (#15–#18 closed); Simulator next after B1 |
 | B4 Detail | #19 #20 | `local_6ae3d0a3-a60e-402e-a4f9-6b3926fa0e8c` | **done**: #45 #47 #54 merged; Simulator check done (tiles, fields, Navigate OK; Call alert expected on Simulator) |
-| C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | running |
+| C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | running: #56 #57 #59 #60 merged (#21–#24 closed); #25 in progress (#61) |
 | E Walkthrough | #27 | — | after all |
 
-## Build plan (issue list) — 21 of 28 closed
+## Build plan (issue list) — 24 of 28 closed
 
 Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 8. Figma needed before Phase 2. 
 
@@ -51,8 +51,8 @@ Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 
 | 3.1–3.4 list, incl. swipe deceased/restore (#11–#14) | ✅ closed (#42, #48, #49, #52, + #55); Simulator check pending |
 | 4.1–4.4 map (#15–#18) | ✅ closed (#44, #50, #53, #51); Simulator check pending |
 | 5.1–5.2 detail (#19–#20) | ✅ closed (#45, #47, + fixes #54, #58); Simulator check done |
-| 6.1–6.4 form (#21–#24) | #21 ✅ closed (#56); #22 PR #57 open; #23, #24 in progress |
-| 7.1–7.2 location / photo (#25–#26) | todo (stream C, after #24) |
+| 6.1–6.4 form (#21–#24) | ✅ closed (#56, #57, #59, #60) |
+| 7.1–7.2 location / photo (#25–#26) | in progress (stream C; PR #61 open) |
 | 8 Simulator walkthrough (#27) | todo (after all) |
 
 Hub rule: this table is regenerated from GitHub whenever a PR is merged.
@@ -62,6 +62,10 @@ Hub rule: this table is regenerated from GitHub whenever a PR is merged.
 Red from #45 to #54: the Detail header Row overflowed at phone width and the List row-tap test caught it. Fixed in #54 (wraps, plus a 393-pt regression test); #55 stubs Detail in the List tests. The hub now waits for main's own CI after each merge.
 
 ## Follow-ups (hub-owned)
+
+- Move `CareLevelBadge` from `lib/features/detail/` to `lib/shared/` (Form imports it across features).
+- Token gaps: accent tint 0.15 (PIN avatar) and 0.1 (form banner) are local consts.
+- Simulator: B1's check paused at 2026-11-19 because someone else (likely the user) used it; resume on the user's OK.
 
 - Back button on Detail/Add/Edit shows "<" without "Patients": set route titles in `lib/app/routes.dart`.
 - Delete `lib/app/placeholder_body.dart` once no screen uses it.
