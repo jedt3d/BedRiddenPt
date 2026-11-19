@@ -35,8 +35,7 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 | B2 List | #11–#14 | `local_c986f8ba-c4b0-4f23-9746-192822d2efd1` | **done**: #42 #48 #49 #52 merged (#11–#14 closed); Simulator check not yet run |
 | B3 Map | #15 #16 #18, then #17 after #19 | `local_7bc2fad5-26bd-492c-bebe-db9f81c515f6` | running: #44 #50 #51 merged (#15 #16 #18 closed); building #17; Simulator queued (3rd) |
 | B4 Detail | #19 #20 | `local_6ae3d0a3-a60e-402e-a4f9-6b3926fa0e8c` | code complete: #45 #47 merged (#19 #20 closed); **holds the Simulator** for its visual check |
-| C Form | #21–#24 | — | **unblocked** (#20 merged); needs the user's go to start |
-| D Location + photo | #25 #26 | — | after #21 |
+| C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | running |
 | E Walkthrough | #27 | — | after all |
 
 ## Build plan (issue list)
