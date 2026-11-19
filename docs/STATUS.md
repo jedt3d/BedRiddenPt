@@ -29,12 +29,12 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 
 | Stream | Issues | Session | State |
 |---|---|---|---|
-| A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | fixing review findings. Merged: #29 (#1), #38 (#2 #3, replaces #30/#31). Open stack, CI green, waiting on the expert review: #39 (#28, replaces #32) ← #33 (#4) ← #34 (#6) ← #35 (#5) ← #36 (#7) ← #37 shell. Hub verified the stack tip (analyze, 38 tests, check_tokens) and the #29 Simulator screenshot |
-| Expert review | #6 repository, #28 tokens, shell | expert | done: no blockers; 2 high + 6 medium + token fixes sent to stream A as one fix PR (shared `lib/shared/`, `lib/geo/`, repository guards). Hub decision: seed/prefill from active pool only (SPEC §6) |
-| B1 Launch | #8 #9 #10 | — | waits for review |
-| B2 List | #11–#14 | — | waits for review |
-| B3 Map | #15 #16 #18, then #17 after #19 | — | waits for review |
-| B4 Detail | #19 #20 | — | waits for review |
+| A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | **merged** (#29, #38, #39, #33–#37, #40 review fixes); issues #1–#7, #28 closed; branches deleted. Pending: Simulator check on a fresh install (5 active seeded, relaunch same ids, name → PIN → Home) |
+| Expert review | #6 repository, #28 tokens, shell | expert | done, fixes merged in #40: no blockers; 2 high + 6 medium + token fixes sent to stream A as one fix PR (shared `lib/shared/`, `lib/geo/`, repository guards). Hub decision: seed/prefill from active pool only (SPEC §6) |
+| B1 Launch | #8 #9 #10 | — | waits for stream A's Simulator check |
+| B2 List | #11–#14 | — | waits for stream A's Simulator check |
+| B3 Map | #15 #16 #18, then #17 after #19 | — | waits for stream A's Simulator check |
+| B4 Detail | #19 #20 | — | waits for stream A's Simulator check |
 | C Form | #21–#24 | — | after #20 |
 | D Location + photo | #25 #26 | — | after #21 |
 | E Walkthrough | #27 | — | after all |
