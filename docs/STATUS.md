@@ -29,7 +29,7 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 
 | Stream | Issues | Session | State |
 |---|---|---|---|
-| A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | running |
+| A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | running: PRs #29–#36 open, stacked (#1 #2 #3 #28 #4 #6 #5 #7); hub verified stack tip: analyze clean, 35 tests pass, check_tokens OK. Waiting: ci.yml push to #32, #29 Simulator check, then the shell |
 | Expert review | #6 repository, #28 tokens, shell | expert | after A merges |
 | B1 Launch | #8 #9 #10 | — | waits for review |
 | B2 List | #11–#14 | — | waits for review |
