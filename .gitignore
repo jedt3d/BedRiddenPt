@@ -3,3 +3,23 @@
 **/.dart_tool/
 **/.idea/
 .flutter-plugins-dependencies
+
+# Flutter app at the repo root (entries from the flutter create template)
+*.iml
+*.ipr
+*.iws
+*.log
+*.swp
+.swiftpm/
+migrate_working_dir/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.pub-cache/
+.pub/
+/coverage/
+app.*.symbols
+app.*.map.json
+/android/app/debug
+/android/app/profile
+/android/app/release
+.widget_preview/
