@@ -166,6 +166,19 @@ void main() {
     expect(find.text('Bedridden'), findsWidgets);
   });
 
+  testWidgets('the header wraps at phone width instead of overflowing', (
+    tester,
+  ) async {
+    // 393 pt (Figma frame width); the test font is far wider than SF Pro.
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final (repo, p) = await seeded(tester);
+    await pumpDetail(tester, repo, p.id);
+    expect(tester.takeException(), isNull);
+    expect(find.textContaining('Born ${p.birthYearBE}'), findsOneWidget);
+  });
+
   testWidgets('reloads after a repository change', (tester) async {
     final (repo, p) = await seeded(tester);
     await pumpDetail(tester, repo, p.id);

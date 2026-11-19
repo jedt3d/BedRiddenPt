@@ -284,24 +284,21 @@ class _Header extends StatelessWidget {
             style: AppText.detailName.copyWith(color: AppColors.labelPrimary),
           ),
           const SizedBox(height: AppSpace.s6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _SexText(sex: p.sex, style: AppText.subheadline),
-              Text(
-                ' · Born ${bornText(p)}',
-                style: AppText.subheadline.copyWith(
-                  color: AppColors.labelSecondary,
-                ),
-              ),
-            ],
+          // One wrapping text, so a long line never overflows.
+          _SexText(
+            sex: p.sex,
+            style: AppText.subheadline,
+            suffix: ' · Born ${bornText(p)}',
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpace.s6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: AppSpace.s8,
+            runSpacing: AppSpace.s4,
             children: [
               CareLevelBadge(level: p.careLevel),
-              const SizedBox(width: AppSpace.s8),
               Text(
                 p.status.label,
                 style: AppText.footnote.copyWith(color: statusColor),
@@ -328,12 +325,19 @@ class _Caption extends StatelessWidget {
   );
 }
 
-/// "♀ Female" with the symbol in the sex colour.
+/// "♀ Female" with the symbol in the sex colour, then [suffix] if any.
 class _SexText extends StatelessWidget {
-  const _SexText({required this.sex, required this.style});
+  const _SexText({
+    required this.sex,
+    required this.style,
+    this.suffix = '',
+    this.textAlign,
+  });
 
   final Sex sex;
   final TextStyle style;
+  final String suffix;
+  final TextAlign? textAlign;
 
   @override
   Widget build(BuildContext context) {
@@ -345,6 +349,7 @@ class _SexText extends StatelessWidget {
     // a fallback font with a taller line and pushed the text down.
     return Text.rich(
       strutStyle: StrutStyle.fromTextStyle(style, forceStrutHeight: true),
+      textAlign: textAlign,
       TextSpan(
         children: [
           TextSpan(
@@ -352,7 +357,7 @@ class _SexText extends StatelessWidget {
             style: style.copyWith(color: color),
           ),
           TextSpan(
-            text: sex.label,
+            text: '${sex.label}$suffix',
             style: style.copyWith(color: AppColors.labelSecondary),
           ),
         ],
