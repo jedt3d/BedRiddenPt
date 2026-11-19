@@ -36,7 +36,7 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 | B3 Map | #15 #16 #18, then #17 after #19 | `local_7bc2fad5-26bd-492c-bebe-db9f81c515f6` | **done**: #44 #50 #51 #53 #63 merged; Simulator check passed (fit fix in #63) |
 | B4 Detail | #19 #20 | `local_6ae3d0a3-a60e-402e-a4f9-6b3926fa0e8c` | **done**: #45 #47 #54 merged; Simulator check done (tiles, fields, Navigate OK; Call alert expected on Simulator) |
 | C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | **done**: #56 #57 #59 #60 #61 #62 merged (#21–#26 closed); Simulator checks passed |
-| E Walkthrough | #27 | `local_1fbb5e06-c23e-480f-a9e6-4d98b9715191` | ran: 32/33 pass, step 31 skipped (covered by tests); 1 fail: map callout clipped at the top edge → B3 fixing. Results: [#27 comment](https://github.com/jedt3d/BedRiddenPt/issues/27#issuecomment-7009265063) |
+| E Walkthrough | #27 | `local_1fbb5e06-c23e-480f-a9e6-4d98b9715191` | re-run on a071a83: callout fixes (#67, #68) pass; **formatted-field fast backspace still fails** (hidden digits after a fast clear; a lost keypress next to a dash) → stream C + expert. [Re-run comment](https://github.com/jedt3d/BedRiddenPt/issues/27#issuecomment-7009912638) |
 
 ## Build plan (issue list) — 27 of 28 closed
 
@@ -53,7 +53,7 @@ Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 
 | 5.1–5.2 detail (#19–#20) | ✅ closed (#45, #47, + fixes #54, #58); Simulator check done |
 | 6.1–6.4 form (#21–#24) | ✅ closed (#56, #57, #59, #60) |
 | 7.1–7.2 location / photo (#25–#26) | #25 ✅ closed (#61, Simulator ±5 m + Khlong Ton Sai verified); #26 ✅ closed (#62, Simulator pass; 2 UI fixes included, visual re-check in #27) |
-| 8 Simulator walkthrough (#27) | open: 32/33 pass; callout-clip fix (B3) then re-run step 30 |
+| 8 Simulator walkthrough (#27) | open: callout fixed (#67, #68, verified); National ID/phone fast-backspace bug on device (#66 not enough) → stream C + expert, then re-run |
 
 Hub rule: this table is regenerated from GitHub whenever a PR is merged.
 
