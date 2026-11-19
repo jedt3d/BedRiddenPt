@@ -42,11 +42,6 @@ class _MapTabState extends State<MapTab> {
   /// The patient whose name callout is open. None when the map opens.
   String? _selectedId;
 
-  // The callout's box above the pin: wide enough for a long name (the text
-  // ellipsizes), tall enough for two lines; empty space in it isn't hit.
-  static const _calloutWidth = 260.0;
-  static const _calloutHeight = 64.0;
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -130,28 +125,13 @@ class _MapTabState extends State<MapTab> {
                           ),
                         ),
                       ),
-                    if (selected != null)
-                      Marker(
-                        point: LatLng(selected.lat, selected.lng),
-                        width: _calloutWidth,
-                        height:
-                            _calloutHeight + AppSpace.s7 + MapPin.size.height,
-                        alignment: Alignment.topCenter,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            MapCallout(
-                              patient: selected,
-                              onTap: () =>
-                                  Routes.openDetail(context, selected.id),
-                            ),
-                            const SizedBox(height: AppSpace.s7),
-                            SizedBox(height: MapPin.size.height),
-                          ],
-                        ),
-                      ),
                   ],
                 ),
+                if (selected != null)
+                  _CalloutLayer(
+                    patient: selected,
+                    onTap: () => Routes.openDetail(context, selected.id),
+                  ),
               ],
             ),
           ),
@@ -159,6 +139,57 @@ class _MapTabState extends State<MapTab> {
           MapLegend(patients: _patients, showInactive: showInactive.value),
         ],
       ),
+    );
+  }
+}
+
+/// The name callout of the selected pin. Above the pin, as in Figma frame
+/// 15, unless the pin is too close to the map's top edge for it to fit:
+/// then below the pin's tip, so the whole callout stays visible.
+class _CalloutLayer extends StatelessWidget {
+  const _CalloutLayer({required this.patient, required this.onTap});
+
+  final Patient patient;
+  final VoidCallback onTap;
+
+  // The callout's box: wide enough for a long name (the text ellipsizes),
+  // tall enough for its two lines; empty space in it isn't hit.
+  static const _width = 260.0;
+  static const _height = 64.0;
+  static const _gap = AppSpace.s7;
+
+  /// Whether a callout above a pin whose tip is [tipY] pt below the map's
+  /// top edge would be cut off.
+  static bool fitsAbove(double tipY) =>
+      tipY >= MapPin.size.height + _gap + _height;
+
+  @override
+  Widget build(BuildContext context) {
+    final point = LatLng(patient.lat, patient.lng);
+    final tipY = MapCamera.of(context).latLngToScreenOffset(point).dy;
+    final callout = MapCallout(patient: patient, onTap: onTap);
+    final above = fitsAbove(tipY);
+    return MarkerLayer(
+      markers: [
+        Marker(
+          point: point,
+          width: _width,
+          height: above ? _height + _gap + MapPin.size.height : _height + _gap,
+          alignment: above ? Alignment.topCenter : Alignment.bottomCenter,
+          child: Column(
+            mainAxisAlignment: above
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
+            children: above
+                ? [
+                    callout,
+                    const SizedBox(height: _gap),
+                    SizedBox(height: MapPin.size.height),
+                  ]
+                : [const SizedBox(height: _gap), callout],
+          ),
+        ),
+      ],
     );
   }
 }
