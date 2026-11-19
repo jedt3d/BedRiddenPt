@@ -125,6 +125,16 @@ void main() {
     );
   });
 
+  test('Home and Detail routes carry the back-button titles', () {
+    String? titleOf(String name, [Object? args]) =>
+        (Routes.onGenerateRoute(RouteSettings(name: name, arguments: args))!
+                as CupertinoPageRoute<void>)
+            .title;
+    expect(titleOf(Routes.home), 'Patients'); // Detail/Add: "< Patients"
+    expect(titleOf(Routes.detail, 'x'), 'Patient'); // Edit: "< Patient"
+    expect(titleOf(Routes.pin), isNull);
+  });
+
   test('every route name builds a page; unknown names do not', () {
     for (final (name, args) in [
       (Routes.name, null),

@@ -21,8 +21,7 @@ its tests in `test/features/<stream>/`, e.g. `test/features/list/`).
   (`lib/app/routes.dart`). Detail, Add and Edit go on the root navigator, so
   the tab bar is hidden there.
 - Styles come only from `lib/theme/tokens.dart` (`tool/check_tokens.sh`).
-- Replace `PlaceholderBody` with the real screen; delete
-  `lib/app/placeholder_body.dart` once no screen uses it.
+- (Done: all placeholders replaced; `lib/app/placeholder_body.dart` deleted.)
 
 ## Shared code (hub-owned; use it, don't copy it)
 
@@ -32,6 +31,7 @@ its tests in `test/features/<stream>/`, e.g. `test/features/list/`).
 | `lib/shared/national_id.dart` | `isValidNationalId`, `formatNationalId` (3-XXXX-XXXXX-XX-X, also partial while typing), `parseNationalId`, `invalidNationalIdMessage` |
 | `lib/shared/map_config.dart` | `MapConfig.tileUrl`, `userAgentPackageName` (`com.example.bedriddenPt`), `center` (13.7228, 100.5023), `initialZoom` (14.5), `attribution`, geo asset paths |
 | `lib/shared/care_style.dart` | `CareStyle.of(level)`: `dot`, `badgeText`, `badgeBackground`, `pin`; `CareStyle.pinColorFor(patient)` (grey when inactive) |
+| `lib/shared/care_level_badge.dart` | `CareLevelBadge(level:)`: the tinted "● Bedridden" badge (Detail, form) |
 | `lib/shared/patient_avatar.dart` | `PatientAvatar(patient:, size:)`: bundled asset, a photo in app documents, or initials. A picked photo is copied into app documents and `photo_path` stores only its **file name** (iOS container paths change on reinstall) |
 | `lib/geo/` | Byte-for-byte copies of `spikes/map_geo/lib/geo/random_points.dart` and `nearest_road.dart` (`GeoArea`, `NamedAreas.nameAt`, …). A test keeps them identical; the originals stay for `data/gen_bootstrap.dart` |
 

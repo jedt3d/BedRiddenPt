@@ -8,7 +8,7 @@ import '../../shared/labels.dart';
 import '../../shared/national_id.dart';
 import '../../shared/patient_avatar.dart';
 import '../../theme/tokens.dart';
-import '../detail/detail_screen.dart' show CareLevelBadge;
+import '../../shared/care_level_badge.dart';
 import 'form_draft.dart';
 import 'form_location.dart';
 import 'form_photo.dart';

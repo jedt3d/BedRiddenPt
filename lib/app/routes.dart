@@ -39,7 +39,17 @@ abstract final class Routes {
     };
     return page == null
         ? null
-        : CupertinoPageRoute<void>(settings: settings, builder: (_) => page);
+        : CupertinoPageRoute<void>(
+            settings: settings,
+            // The next screen's back button shows this title (Figma 17:
+            // "< Patients" on Detail, "< Patient" on Edit).
+            title: switch (settings.name) {
+              home => 'Patients',
+              detail => 'Patient',
+              _ => null,
+            },
+            builder: (_) => page,
+          );
   }
 
   // Detail, Add and Edit are pushed on the root navigator, above the tab bar
