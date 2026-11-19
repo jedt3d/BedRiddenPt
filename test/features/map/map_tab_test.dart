@@ -306,4 +306,53 @@ void main() {
       target.id,
     );
   });
+
+  testWidgets('a pin near the top edge: the whole callout stays visible', (
+    tester,
+  ) async {
+    // iPhone 16 Pro size, where the walkthrough found the callout clipped.
+    tester.view.physicalSize = const Size(402, 874);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await pumpMap(tester);
+    await tester.pump(); // the camera fit lands on the next frame
+
+    // Walkthrough #27 step 30: Suwit Sae-lim's pin, near the district's top.
+    final moved = (await tester.runAsync(() async {
+      final p = (await repo.list()).first;
+      return repo.update(p.copyWith(lat: 13.735085, lng: 100.505356));
+    }))!;
+    await settle(tester, () {
+      final pin = find.byKey(ValueKey(moved.id));
+      return pin.evaluate().isNotEmpty &&
+          tester.getTopLeft(pin).dy <
+              tester.getTopLeft(find.byType(FlutterMap)).dy +
+                  MapPin.size.height * 3;
+    });
+
+    await tester.tap(find.byKey(ValueKey(moved.id)));
+    await tester.pump();
+    final map = tester.getRect(find.byType(FlutterMap));
+    final callout = tester.getRect(find.byType(MapCallout));
+    expect(find.text(moved.fullName), findsOneWidget);
+    expect(map.contains(callout.topLeft), isTrue, reason: '$callout in $map');
+    expect(
+      map.contains(callout.bottomRight),
+      isTrue,
+      reason: '$callout in $map',
+    );
+    // It went below the pin, not above.
+    expect(
+      callout.top,
+      greaterThan(tester.getRect(find.byKey(ValueKey(moved.id))).top),
+    );
+
+    // Tapping the flipped callout still opens Detail.
+    await tester.tap(find.text(moved.fullName));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<DetailScreen>(find.byType(DetailScreen)).patientId,
+      moved.id,
+    );
+  });
 }
