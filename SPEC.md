@@ -11,6 +11,7 @@ Date: 2026-11-19 · Status: draft 3, includes the grilling session decisions (te
 - One registration per patient; **no visit history**.
 - The **PIN is fixed at `000000`** (no PIN setup, can't be changed). First launch asks once for the volunteer's name.
 - **Restore** a deceased patient by swiping its row (Show inactive on) → green **Restore**; the form's "Restore to active" link is dropped.
+- §7 now follows the 25-frame Figma prototype: no tab bar on Detail/Add/Edit, care level derived from ADL, birth year typed in B.E., national ID shown as `3-XXXX-XXXXX-XX-X`, "Use my location" also sets the subdistrict, moved patients can be marked deceased.
 
 **Changes from draft 1**
 - The area is the **Khlong San district, Bangkok**.
@@ -124,7 +125,7 @@ the app's real schema. Main table `patients`, plus two child tables:
 | `national_id` | TEXT | 13 digits, valid Thai checksum, **UNIQUE**: a duplicate blocks saving |
 | `full_name` | TEXT | required |
 | `sex` | TEXT | `male`, `female` |
-| `birth_year` | INTEGER | **Gregorian** (e.g. 1950). The UI shows the Buddhist era = Gregorian + 543 (e.g. 2493) and the age |
+| `birth_year` | INTEGER | **Gregorian** (e.g. 1950). The UI shows the Buddhist era = Gregorian + 543 (e.g. 2493) and the age. The schema CHECK is fixed at 1916–1966 (reference year 2026; SQLite can't use `date('now')` in a CHECK), and the app also checks age 60–110 against the current year. Known limit: from 2027 the CHECK rejects a 60-year-old |
 | `photo_path` | TEXT? | bundled asset or a file in app documents |
 | `contact_name` | TEXT | the **contact person**: the one person to call about the patient; may be the patient ("Self") |
 | `contact_relation` | TEXT | one of `self`, `spouse`, `child`, `grandchild`, `sibling`, `otherRelative`, `neighbour`, `other` |
@@ -132,7 +133,7 @@ the app's real schema. Main table `patients`, plus two child tables:
 | `address_note` | TEXT | soi/road + landmark |
 | `lat`, `lng` | REAL | required, inside the district |
 | `gps_accuracy_m` | REAL? | null for bootstrap data |
-| `dependency` | TEXT | `bedridden` (ADL 0–4), `homebound` (5–11), `social` (12–20) |
+| `dependency` | TEXT | the **care level**: `bedridden` (ADL 0–4), `homebound` (5–11), `social` (12–20). The app derives it from `adl_score` |
 | `adl_score` | INTEGER? | 0–20, must match the dependency band |
 | `main_condition` | TEXT | stroke, dementia, frailty, spinalInjury, cancer, other |
 | `living_situation` | TEXT | withCaregiver, livesAlone, elderlyCaregiver |
@@ -168,15 +169,31 @@ check digit = (11 − sum mod 11) mod 10. The schema enforces it with a CHECK.
 
 ## 7. Screens
 
-1. **PIN.** The PIN is fixed at `000000`; there is no PIN setup and it can't be changed. First launch only: a one-time **Your name** screen (required, saved as the volunteer's name and used for `registered_by`). Every launch: enter the PIN. No lockout. Top-right ⋮ → **Reset sample data** (keeps the name).
+The 25 frames in the [Figma prototype](https://www.figma.com/design/zHNLIMNEn1XPcNwBTZGw7B) (page "Screens") follow this section.
+
+1. **Launch.** The PIN is fixed at `000000`; there is no PIN setup and it can't be changed.
+   - First launch: **Your name** (required, saved as the volunteer's name and used for `registered_by`) → PIN entry → List with the 5 seeded patients.
+   - Every later launch: PIN entry → List. No lockout.
+   - Top-right ⋮ opens a `CupertinoActionSheet` with **Reset sample data** → confirmation alert (keeps the name).
 2. **Home**, with tabs **List** | **Map**.
    - List: photo, name, age, subdistrict, care-level badge, status. Search by name or national ID. Filter by care level and status. **Show inactive** switch (shared with the map), off by default.
-   - **Swipe left** on a row → red **Deceased** action → `CupertinoAlertDialog` "Mark <name> as deceased? Their pin will be hidden from the map." (Cancel / Mark deceased). Built with Flutter's `Dismissible` and `confirmDismiss` returning false, so the row stays and no package is needed.
-   - **Restore:** with Show inactive on, swipe left on a **deceased** row → green **Restore** action → `CupertinoAlertDialog` "Restore <name> to active? Their pin will show on the map again." (Cancel / Restore). Status becomes active. Same `Dismissible` pattern.
-   - Map: the district outline plus pins colored by **care level (dependency), not age** (bedridden = red, homebound = orange, social = green, deceased/moved = grey). Tap a pin, then its name, to open Detail.
-   - **Color legend below the map:** the map takes the top part of the screen; scrolling down shows a short legend with one row per color: a swatch, the label and a one-line meaning (e.g. "Red: bedridden (ADL 0–4), needs help with almost everything"), plus the patient count for each color.
-3. **Add / Edit form:** prefilled as in §6, with "Use my location" (shows ±m accuracy), photo from gallery or camera, and the duplicate-ID block. Status picker: **Active / In hospital / Moved** only. A deceased patient shows "Deceased" read-only (restore is by swipe, see Home). Contact relationship is a picker over the fixed list in §5.
-4. **Detail:** all fields, a small map, **Call**, **Navigate** (Apple Maps) and **Edit**.
+   - Header counts: "8 PATIENTS · 1 INACTIVE HIDDEN" (Show inactive off) / "9 PATIENTS · INCLUDING 1 INACTIVE" (on).
+   - Status filter: action sheet "All statuses / Active / In hospital / Moved / Deceased"; **Moved** and **Deceased** appear only while Show inactive is on.
+   - Status colours: "In hospital" in indigo (#5856D6); inactive rows are dimmed (dimmed photo, grey name).
+   - **Swipe left** on an active, in-hospital or **moved** row → full-width red **Deceased** background → `CupertinoAlertDialog` "Mark <name> as deceased? Their pin will be hidden from the map." (Cancel / Mark deceased). Built with Flutter's `Dismissible` and `confirmDismiss` returning false, so the row stays and no package is needed. (Moved rows are only visible, so only swipeable, while Show inactive is on.)
+   - **Restore:** with Show inactive on, swipe left on a **deceased** row → full-width green **Restore** background → `CupertinoAlertDialog` "Restore <name> to active? Their pin will show on the map again." (Cancel / Restore). Status becomes active at once (no Save) and the list stays. Same `Dismissible` pattern.
+   - Map: the district outline plus pins colored by **care level, not age** (bedridden = red, homebound = orange, social = green, deceased/moved = grey). The map opens with no callout; tap a pin → name callout; tap the name → Detail.
+   - **Color legend below the map:** the map takes the top part of the screen; scrolling down shows a short legend with one row per color: a swatch, the label and a one-line meaning (e.g. "Red: bedridden (ADL 0–4), needs help with almost everything"), plus the patient count for each color. While Show inactive is off, the grey row shows its count as "N hidden".
+3. **Add / Edit form** (pushed on the root navigator, no tab bar):
+   - Prefilled as in §6. When all 50 pool patients are registered, the form starts empty with the banner "All 50 sample-pool patients are already registered, so this form starts empty."
+   - **Use my location** sets lat/lng, shows ±m accuracy, and also sets the subdistrict from the polygon it falls in (`NamedAreas.nameAt`). Outside the district, the subdistrict is left unchanged and the form shows "Outside Khlong San district".
+   - Photo: "Change photo" → action sheet Take photo / Choose from library / Cancel.
+   - National ID is shown and typed as `3-XXXX-XXXXX-XX-X` and stored as 13 digits. A bad checksum shows "This national ID isn't valid." A duplicate shows "A patient with this national ID already exists." under the field after Save, and Save is blocked.
+   - Birth year is entered in the Buddhist era ("Born (B.E.)") and stored Gregorian.
+   - Care level is derived from the ADL score (bands in §5) and shown read-only; there is no care-level picker.
+   - Status picker: **Active / In hospital / Moved** only. A deceased patient shows "Deceased" read-only with a lock (restore is by swipe, see Home).
+   - Display labels: relationship Self / Spouse / Child / Grandchild / Sibling / Other relative / Neighbour / Other; care needs Bedsore / Feeding tube / Catheter / Oxygen / Air mattress / Wheelchair; "Main condition"; "Living situation".
+4. **Detail** (pushed on the root navigator, no tab bar): all fields, a small map, **Call**, **Navigate** (Apple Maps) and one **Edit** button (no Edit in the top bar).
 
 Dates show the Buddhist era (e.g. "Born 2493 (age 76)"). All UI text is in English.
 
