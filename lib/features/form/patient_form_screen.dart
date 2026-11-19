@@ -234,6 +234,7 @@ class _FormBody extends StatelessWidget {
     final d = draft;
     final year = formClock().year;
     final birthYear = d.birthYear;
+    final deceased = d.status == PatientStatus.deceased;
     return ListView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.only(bottom: AppSpace.s30),
@@ -522,22 +523,49 @@ class _FormBody extends StatelessWidget {
         ),
         CupertinoListSection.insetGrouped(
           header: const Text('STATUS'),
-          footer: const Text(
-            'To mark a patient deceased, swipe left on the list.',
+          footer: Text(
+            deceased
+                ? deceasedStatusHint
+                : 'To mark a patient deceased, swipe left on the list.',
           ),
           children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpace.s8),
-              child: CupertinoSlidingSegmentedControl<PatientStatus>(
-                groupValue: d.status == PatientStatus.deceased
-                    ? null
-                    : d.status,
-                onValueChanged: (v) {
-                  if (v != null) _set(() => d.status = v);
-                },
-                children: {for (final s in formStatuses) s: _Segment(s.label)},
+            if (deceased)
+              // Read-only with a lock (SPEC §7.3, Figma frame 25): restore is
+              // by swipe in the list, never from the form.
+              FieldRow(
+                icon: CupertinoIcons.checkmark_circle,
+                label: 'Status',
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        PatientStatus.deceased.label,
+                        style: AppText.body.copyWith(
+                          color: AppColors.labelTertiary,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      CupertinoIcons.lock_fill,
+                      size: AppSpace.s16,
+                      color: AppColors.iconSecondary,
+                    ),
+                  ],
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.all(AppSpace.s8),
+                child: CupertinoSlidingSegmentedControl<PatientStatus>(
+                  groupValue: d.status,
+                  onValueChanged: (v) {
+                    if (v != null) _set(() => d.status = v);
+                  },
+                  children: {
+                    for (final s in formStatuses) s: _Segment(s.label),
+                  },
+                ),
               ),
-            ),
           ],
         ),
         CupertinoListSection.insetGrouped(
@@ -577,6 +605,11 @@ class _FormBody extends StatelessWidget {
     );
   }
 }
+
+/// Footer under the read-only Deceased status (Figma frame 25).
+const deceasedStatusHint =
+    'Read-only. To restore, turn on Show inactive in the list and swipe '
+    'this patient’s row left.';
 
 /// The statuses the form's picker offers (SPEC §7.3): never Deceased.
 const formStatuses = [
