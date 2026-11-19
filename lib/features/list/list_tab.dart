@@ -8,11 +8,13 @@ import '../../theme/tokens.dart';
 import '../../shared/labels.dart';
 import 'patient_row.dart';
 import 'status_filter_sheet.dart';
+import 'swipe_row.dart';
 
 /// The List tab of Home (SPEC §7.2, Figma frames 07–13): search by name or
 /// national ID, care-level and status filters, the Show inactive switch
 /// (`AppScope.showInactive`, shared with the Map tab), and the patient rows
-/// under a count header. A row opens [Routes.openDetail]; + opens
+/// under a count header. Swipe a row left to mark the patient deceased, or
+/// to restore a deceased one ([SwipeRow]). A row opens [Routes.openDetail]; + opens
 /// [Routes.openAdd].
 class ListTab extends StatefulWidget {
   const ListTab({super.key});
@@ -157,11 +159,15 @@ class _ListTabState extends State<ListTab> {
                         child: Column(
                           children: [
                             for (final p in _rows)
-                              PatientRow(
-                                key: ValueKey(p.id),
+                              SwipeRow(
                                 patient: p,
-                                currentYear: year,
-                                onTap: () => Routes.openDetail(context, p.id),
+                                repository: _repo!,
+                                child: PatientRow(
+                                  key: ValueKey(p.id),
+                                  patient: p,
+                                  currentYear: year,
+                                  onTap: () => Routes.openDetail(context, p.id),
+                                ),
                               ),
                           ],
                         ),
