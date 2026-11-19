@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Git pre-commit hook: no raw style values in lib/.
+# Enable once per clone:   git config core.hooksPath tool/hooks
+exec "$(git rev-parse --show-toplevel)/tool/check_tokens.sh"

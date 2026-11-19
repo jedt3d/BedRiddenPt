@@ -23,3 +23,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 .widget_preview/
+
+# Claude Code: per-session worktrees and personal settings
+.claude/worktrees/
+.claude/settings.local.json
