@@ -10,8 +10,9 @@ import 'patient_row.dart';
 import 'status_filter_sheet.dart';
 
 /// The List tab of Home (SPEC §7.2, Figma frames 07–13): search by name or
-/// national ID, care-level and status filters, and the patient rows under a
-/// count header. A row opens [Routes.openDetail]; + opens
+/// national ID, care-level and status filters, the Show inactive switch
+/// (`AppScope.showInactive`, shared with the Map tab), and the patient rows
+/// under a count header. A row opens [Routes.openDetail]; + opens
 /// [Routes.openAdd].
 class ListTab extends StatefulWidget {
   const ListTab({super.key});
@@ -54,9 +55,9 @@ class _ListTabState extends State<ListTab> {
     final scope = AppScope.of(context);
     if (scope.patients != _repo || scope.showInactive != _showInactive) {
       _repo?.removeListener(_reload);
-      _showInactive?.removeListener(_reload);
+      _showInactive?.removeListener(_onShowInactiveChanged);
       _repo = scope.patients..addListener(_reload);
-      _showInactive = scope.showInactive..addListener(_reload);
+      _showInactive = scope.showInactive..addListener(_onShowInactiveChanged);
       _reload();
     }
   }
@@ -64,8 +65,19 @@ class _ListTabState extends State<ListTab> {
   @override
   void dispose() {
     _repo?.removeListener(_reload);
-    _showInactive?.removeListener(_reload);
+    _showInactive?.removeListener(_onShowInactiveChanged);
     super.dispose();
+  }
+
+  /// Turning Show inactive off also clears a Moved / Deceased status filter,
+  /// which would otherwise match nothing.
+  void _onShowInactiveChanged() {
+    setState(() {
+      if (!_showInactive!.value && (_status?.isInactive ?? false)) {
+        _status = null;
+      }
+    });
+    _reload();
   }
 
   Future<void> _reload() async {
@@ -196,7 +208,34 @@ class _ListTabState extends State<ListTab> {
           borderRadius: BorderRadius.circular(AppRadius.card),
           child: ColoredBox(
             color: AppColors.bgSurface,
-            child: Column(children: [_statusRow(showInactive)]),
+            child: Column(
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        width: 0,
+                        color: AppColors.separatorDefault.withValues(
+                          alpha: AppColors.separatorDefaultOpacity,
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: _statusRow(showInactive),
+                ),
+                _SettingRow(
+                  icon: CupertinoIcons.eye_slash,
+                  label: 'Show inactive',
+                  onTap: () => _showInactive!.value = !showInactive,
+                  trailing: CupertinoSwitch(
+                    value: showInactive,
+                    activeTrackColor: AppColors.actionPositive,
+                    inactiveTrackColor: AppColors.fillSwitchOff,
+                    onChanged: (on) => _showInactive!.value = on,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
