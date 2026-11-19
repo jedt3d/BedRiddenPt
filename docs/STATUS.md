@@ -23,7 +23,23 @@ Answered 2026-11-19 and written into `SPEC.md` (draft 3 change list, §2, §4, �
 
 The user adopted figma-proto's 15 design decisions plus: "Use my location" also sets the subdistrict; moved patients can be swiped to Deceased; birth_year CHECK stays 1916–1966 (known limit, app checks age). Hub defaults, not asked: ⋮ = CupertinoActionSheet; bad checksum text "This national ID isn't valid. Check the 13 digits."; `neighbour`/`other` unused in sample (no change). All in `SPEC.md` §5, §7 and the draft-3 change list; GLOSSARY adds **Care needs**; 17 issues carry spec-update comments.
 
-## Build plan (not started — needs user go-ahead)
+## Build streams (started 2026-11-19, plan approved by the user)
+
+Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; reviews and merges PRs with `gh pr merge --squash --auto` after the Done-when check). Main session (`local_78971f4d-…`) reports to the user every 15 min while workers run. Workers: Opus 5.5 / medium, own worktree, one PR per issue. Expert (`local_08d17d04-48b6-4415-be2b-997a359bfb43`, plan mode, read-only; user switches it to Fable 5.2 / high) is consulted after 3 different failed attempts, or at once for Xcode/Pods/signing.
+
+| Stream | Issues | Session | State |
+|---|---|---|---|
+| A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | running |
+| Expert review | #6 repository, #28 tokens, shell | expert | after A merges |
+| B1 Launch | #8 #9 #10 | — | waits for review |
+| B2 List | #11–#14 | — | waits for review |
+| B3 Map | #15 #16 #18, then #17 after #19 | — | waits for review |
+| B4 Detail | #19 #20 | — | waits for review |
+| C Form | #21–#24 | — | after #20 |
+| D Location + photo | #25 #26 | — | after #21 |
+| E Walkthrough | #27 | — | after all |
+
+## Build plan (issue list)
 
 Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 8. Figma needed before Phase 2. Estimate ≈ 2 h 45 min (SPEC §9 still says 1 h 45 min).
 
