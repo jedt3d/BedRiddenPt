@@ -32,8 +32,8 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 | A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | **merged** (#29, #38, #39, #33–#37, #40 review fixes); issues #1–#7, #28 closed; branches deleted. Pending: Simulator check on a fresh install (5 active seeded, relaunch same ids, name → PIN → Home) |
 | Expert review | #6 repository, #28 tokens, shell | expert | done, fixes merged in #40: no blockers; 2 high + 6 medium + token fixes sent to stream A as one fix PR (shared `lib/shared/`, `lib/geo/`, repository guards). Hub decision: seed/prefill from active pool only (SPEC §6) |
 | B1 Launch | #8 #9 #10 | `local_30dee9da-0a6c-4d7f-88c0-272ca65919a1` | code complete: #41 #43 #46 merged (#8–#10 closed); Simulator check queued (2nd) |
-| B2 List | #11–#14 | `local_c986f8ba-c4b0-4f23-9746-192822d2efd1` | running: #42 (#11) merged; #48 (#12) open |
-| B3 Map | #15 #16 #18, then #17 after #19 | `local_7bc2fad5-26bd-492c-bebe-db9f81c515f6` | running: #44 (#15) merged; #16/#18 then #17 (unblocked); Simulator queued (3rd) |
+| B2 List | #11–#14 | `local_c986f8ba-c4b0-4f23-9746-192822d2efd1` | **done**: #42 #48 #49 #52 merged (#11–#14 closed); Simulator check not yet run |
+| B3 Map | #15 #16 #18, then #17 after #19 | `local_7bc2fad5-26bd-492c-bebe-db9f81c515f6` | running: #44 #50 #51 merged (#15 #16 #18 closed); building #17; Simulator queued (3rd) |
 | B4 Detail | #19 #20 | `local_6ae3d0a3-a60e-402e-a4f9-6b3926fa0e8c` | code complete: #45 #47 merged (#19 #20 closed); **holds the Simulator** for its visual check |
 | C Form | #21–#24 | — | **unblocked** (#20 merged); needs the user's go to start |
 | D Location + photo | #25 #26 | — | after #21 |
