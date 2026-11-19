@@ -95,11 +95,11 @@ class _DetailBody extends StatelessWidget {
         _Header(patient: p),
         DetailActions(patient: p),
         CupertinoListSection.insetGrouped(
-          header: const Text('LOCATION'),
+          header: const _Caption('LOCATION'),
           children: [DetailMiniMap(patient: p)],
         ),
         CupertinoListSection.insetGrouped(
-          header: const Text('PATIENT'),
+          header: const _Caption('PATIENT'),
           children: [
             _Row(
               icon: CupertinoIcons.person_crop_rectangle,
@@ -124,8 +124,8 @@ class _DetailBody extends StatelessWidget {
           ],
         ),
         CupertinoListSection.insetGrouped(
-          header: const Text('CONTACT PERSON'),
-          footer: const Text('Call dials the first phone number.'),
+          header: const _Caption('CONTACT PERSON'),
+          footer: const _Caption('Call dials the first phone number.'),
           children: [
             _Row(
               icon: CupertinoIcons.person,
@@ -153,7 +153,7 @@ class _DetailBody extends StatelessWidget {
           ],
         ),
         CupertinoListSection.insetGrouped(
-          header: const Text('ADDRESS'),
+          header: const _Caption('ADDRESS'),
           children: [
             _Row(
               icon: CupertinoIcons.map,
@@ -178,7 +178,7 @@ class _DetailBody extends StatelessWidget {
           ],
         ),
         CupertinoListSection.insetGrouped(
-          header: const Text('CARE'),
+          header: const _Caption('CARE'),
           children: [
             _Row(
               icon: CupertinoIcons.heart,
@@ -213,7 +213,7 @@ class _DetailBody extends StatelessWidget {
           ],
         ),
         CupertinoListSection.insetGrouped(
-          header: const Text('STATUS'),
+          header: const _Caption('STATUS'),
           children: [
             _Row(
               icon: CupertinoIcons.checkmark_circle,
@@ -228,8 +228,8 @@ class _DetailBody extends StatelessWidget {
           ],
         ),
         CupertinoListSection.insetGrouped(
-          header: const Text('REGISTRATION'),
-          footer: const Text(
+          header: const _Caption('REGISTRATION'),
+          footer: const _Caption(
             'Editing replaces this registration; there is no visit history.',
           ),
           children: [
@@ -314,6 +314,20 @@ class _Header extends StatelessWidget {
   }
 }
 
+/// A section header or footer: footnote, secondary label (Figma frame 17).
+/// Without it, CupertinoListSection draws headers as large bold titles.
+class _Caption extends StatelessWidget {
+  const _Caption(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text,
+    style: AppText.footnote.copyWith(color: AppColors.labelSecondary),
+  );
+}
+
 /// "♀ Female" with the symbol in the sex colour.
 class _SexText extends StatelessWidget {
   const _SexText({required this.sex, required this.style});
@@ -327,7 +341,10 @@ class _SexText extends StatelessWidget {
       Sex.male => ('♂', AppColors.sexMale),
       Sex.female => ('♀', AppColors.sexFemale),
     };
+    // The strut keeps the line height of [style]; the ♀/♂ glyph comes from
+    // a fallback font with a taller line and pushed the text down.
     return Text.rich(
+      strutStyle: StrutStyle.fromTextStyle(style, forceStrutHeight: true),
       TextSpan(
         children: [
           TextSpan(

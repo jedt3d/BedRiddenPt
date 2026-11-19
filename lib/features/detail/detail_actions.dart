@@ -128,22 +128,27 @@ class _ActionButton extends StatelessWidget {
           padding: EdgeInsets.zero,
           minimumSize: Size.zero,
           onPressed: onPressed,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppColors.bgSurface,
-              borderRadius: BorderRadius.circular(AppRadius.card),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpace.s10),
-              child: Column(
-                children: [
-                  Icon(icon, size: AppSpace.s24, color: color),
-                  const SizedBox(height: AppSpace.s4),
-                  Text(
-                    label,
-                    style: AppText.actionLabel.copyWith(color: color),
-                  ),
-                ],
+          // Full width of its third; CupertinoButton would shrink it to the
+          // label.
+          child: SizedBox(
+            width: double.infinity,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppColors.bgSurface,
+                borderRadius: BorderRadius.circular(AppRadius.card),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpace.s10),
+                child: Column(
+                  children: [
+                    Icon(icon, size: AppSpace.s24, color: color),
+                    const SizedBox(height: AppSpace.s4),
+                    Text(
+                      label,
+                      style: AppText.actionLabel.copyWith(color: color),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
