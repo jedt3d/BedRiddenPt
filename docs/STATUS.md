@@ -38,22 +38,24 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 | C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | running |
 | E Walkthrough | #27 | — | after all |
 
-## Build plan (issue list)
+## Build plan (issue list) — 21 of 28 closed
 
-Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 8. Figma needed before Phase 2. Estimate ≈ 2 h 45 min (SPEC §9 still says 1 h 45 min).
+Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 8. Figma needed before Phase 2. 
 
-| Task (issue) | State |
+| Task (issue) | State (from `gh issue list`, 2026-11-19) |
 |---|---|
-| 0.1–0.3 setup (#1–#3) | todo |
-| 0.4 design tokens + no-raw-values check (#28; source `design/tokens.json`; blocks #8–#27) | todo |
-| 1.1–1.4 data (#4–#7) | todo |
-| 2.1–2.3 name / PIN / reset (#8–#10) | todo |
-| 3.1–3.4 list, incl. swipe deceased/restore (#11–#14) | todo |
-| 4.1–4.4 map (#15–#18) | todo |
-| 5.1–5.2 detail (#19–#20) | todo |
-| 6.1–6.4 form (#21–#24) | todo |
-| 7.1–7.2 location / photo (#25–#26) | todo |
-| 8 Simulator walkthrough (#27) | todo |
+| 0.1–0.3 setup (#1–#3) | ✅ closed (PRs #29, #38) |
+| 0.4 design tokens + no-raw-values check (#28) | ✅ closed (#39) |
+| 1.1–1.4 data (#4–#7) | ✅ closed (#33, #35, #34, #36) + review fixes #40 |
+| 2.1–2.3 name / PIN / reset (#8–#10) | ✅ closed (#41, #43, #46); Simulator check in progress |
+| 3.1–3.4 list, incl. swipe deceased/restore (#11–#14) | ✅ closed (#42, #48, #49, #52, + #55); Simulator check pending |
+| 4.1–4.4 map (#15–#18) | ✅ closed (#44, #50, #53, #51); Simulator check pending |
+| 5.1–5.2 detail (#19–#20) | ✅ closed (#45, #47, + fixes #54, #58); Simulator check done |
+| 6.1–6.4 form (#21–#24) | #21 ✅ closed (#56); #22 PR #57 open; #23, #24 in progress |
+| 7.1–7.2 location / photo (#25–#26) | todo (stream C, after #24) |
+| 8 Simulator walkthrough (#27) | todo (after all) |
+
+Hub rule: this table is regenerated from GitHub whenever a PR is merged.
 
 ## main CI incident (resolved)
 
