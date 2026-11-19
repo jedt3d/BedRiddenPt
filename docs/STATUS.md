@@ -17,7 +17,7 @@ Matt Pocock skills (`~/.claude/skills/`: to-tickets, triage, to-spec, wayfinder,
 Answered 2026-11-19 and written into `SPEC.md` (draft 3 change list, §2, §4, §6, §7):
 1. ✅ PIN fixed at `000000`; one-time "Your name" screen on first launch.
 2. ✅ Restore deceased by swipe left (Show inactive on) → green Restore + confirm; form link dropped.
-3. ✅ Build tasks are GitHub issues #1–#27 on [jedt3d/BedRiddenPt](https://github.com/jedt3d/BedRiddenPt/issues) (public; git initialised, `main` pushed). The plan has 27 tasks, not 25. Each issue has a 'Done when' line and a 'Blocked by' line.
+3. ✅ Build tasks are GitHub issues #1–#28 (0.4 tokens added later as #28) on [jedt3d/BedRiddenPt](https://github.com/jedt3d/BedRiddenPt/issues) (public; git initialised, `main` pushed). The plan has 27 tasks, not 25. Each issue has a 'Done when' line and a 'Blocked by' line.
 
 ## Spec questions — all resolved 2026-11-19
 
@@ -25,11 +25,12 @@ The user adopted figma-proto's 15 design decisions plus: "Use my location" also 
 
 ## Build plan (not started — needs user go-ahead)
 
-Order: 0 → 1, then 2/3/4/5 any order, then 6, then 7, then 8. Figma needed before Phase 2. Estimate ≈ 2 h 45 min (SPEC §9 still says 1 h 45 min).
+Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 8. Figma needed before Phase 2. Estimate ≈ 2 h 45 min (SPEC §9 still says 1 h 45 min).
 
 | Task (issue) | State |
 |---|---|
 | 0.1–0.3 setup (#1–#3) | todo |
+| 0.4 design tokens + no-raw-values check (#28; source `design/tokens.json`; blocks #8–#27) | todo |
 | 1.1–1.4 data (#4–#7) | todo |
 | 2.1–2.3 name / PIN / reset (#8–#10) | todo |
 | 3.1–3.4 list, incl. swipe deceased/restore (#11–#14) | todo |
