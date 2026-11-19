@@ -36,7 +36,7 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 | B3 Map | #15 #16 #18, then #17 after #19 | `local_7bc2fad5-26bd-492c-bebe-db9f81c515f6` | **done**: #44 #50 #51 #53 #63 merged; Simulator check passed (fit fix in #63) |
 | B4 Detail | #19 #20 | `local_6ae3d0a3-a60e-402e-a4f9-6b3926fa0e8c` | **done**: #45 #47 #54 merged; Simulator check done (tiles, fields, Navigate OK; Call alert expected on Simulator) |
 | C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | **done**: #56 #57 #59 #60 #61 #62 merged (#21–#26 closed); Simulator checks passed |
-| E Walkthrough | #27 | `local_1fbb5e06-c23e-480f-a9e6-4d98b9715191` | **holds the Simulator**; 33-step checklist (e-sim/CHECKLIST.md) |
+| E Walkthrough | #27 | `local_1fbb5e06-c23e-480f-a9e6-4d98b9715191` | ran: 32/33 pass, step 31 skipped (covered by tests); 1 fail: map callout clipped at the top edge → B3 fixing. Results: [#27 comment](https://github.com/jedt3d/BedRiddenPt/issues/27#issuecomment-7009265063) |
 
 ## Build plan (issue list) — 27 of 28 closed
 
@@ -53,7 +53,7 @@ Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 
 | 5.1–5.2 detail (#19–#20) | ✅ closed (#45, #47, + fixes #54, #58); Simulator check done |
 | 6.1–6.4 form (#21–#24) | ✅ closed (#56, #57, #59, #60) |
 | 7.1–7.2 location / photo (#25–#26) | #25 ✅ closed (#61, Simulator ±5 m + Khlong Ton Sai verified); #26 ✅ closed (#62, Simulator pass; 2 UI fixes included, visual re-check in #27) |
-| 8 Simulator walkthrough (#27) | todo (after all) |
+| 8 Simulator walkthrough (#27) | open: 32/33 pass; callout-clip fix (B3) then re-run step 30 |
 
 Hub rule: this table is regenerated from GitHub whenever a PR is merged.
 
@@ -66,7 +66,7 @@ Red from #45 to #54: the Detail header Row overflowed at phone width and the Lis
 - ✅ Done in #64: back button reads "< Patients" / "< Patient"; `CareLevelBadge` moved to `lib/shared/`; `placeholder_body.dart` deleted.
 - ✅ #63 (B3 Simulator finding): the Map tab fits the district outline (SPEC §2 updated).
 - ✅ `main` protected 2026-11-19 (user's OK): required check `check`, branch must be up to date; admins not enforced (hub STATUS commits go direct).
-- Simulator: E walkthrough (now). All per-stream checks done: B4, B1, C, B3, B2.
+- Simulator: B3 (callout fix). Walkthrough results: callout clip → B3; national ID rapid-backspace → C investigates with tests; accepted as is: Edit Cancel/Save (Figma), ADL caption wording (Figma 23), Done-only relationship picker (iOS convention).
 
 ## Token gaps (logged, not blocking)
 
