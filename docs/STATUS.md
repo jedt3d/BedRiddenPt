@@ -35,10 +35,10 @@ Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; re
 | B2 List | #11–#14 | `local_c986f8ba-c4b0-4f23-9746-192822d2efd1` | **done**: #42 #48 #49 #52 #55 merged; Simulator queued (after B3) |
 | B3 Map | #15 #16 #18, then #17 after #19 | `local_7bc2fad5-26bd-492c-bebe-db9f81c515f6` | code complete: #44 #50 #51 #53 merged (#15–#18 closed); Simulator next after B1 |
 | B4 Detail | #19 #20 | `local_6ae3d0a3-a60e-402e-a4f9-6b3926fa0e8c` | **done**: #45 #47 #54 merged; Simulator check done (tiles, fields, Navigate OK; Call alert expected on Simulator) |
-| C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | running: #56 #57 #59 #60 merged (#21–#24 closed); #25 in progress (#61) |
+| C Form + D Location/photo | #21–#24, then #25 #26 (merged into one stream: same `lib/features/form/` folder) | `local_1de03b92-225a-48df-a0c6-3024990825a9` | **done**: #56 #57 #59 #60 #61 #62 merged (#21–#26 closed); Simulator checks passed |
 | E Walkthrough | #27 | — | after all |
 
-## Build plan (issue list) — 25 of 28 closed
+## Build plan (issue list) — 27 of 28 closed
 
 Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 8. Figma needed before Phase 2. 
 
@@ -52,7 +52,7 @@ Order: 0 (incl. 0.4 tokens) → 1, then 2/3/4/5 any order, then 6, then 7, then 
 | 4.1–4.4 map (#15–#18) | ✅ closed (#44, #50, #53, #51); Simulator check pending |
 | 5.1–5.2 detail (#19–#20) | ✅ closed (#45, #47, + fixes #54, #58); Simulator check done |
 | 6.1–6.4 form (#21–#24) | ✅ closed (#56, #57, #59, #60) |
-| 7.1–7.2 location / photo (#25–#26) | #25 ✅ closed (#61, Simulator ±5 m + Khlong Ton Sai verified); #26 PR #62 open (Simulator pass; 2 UI fixes being added) |
+| 7.1–7.2 location / photo (#25–#26) | #25 ✅ closed (#61, Simulator ±5 m + Khlong Ton Sai verified); #26 ✅ closed (#62, Simulator pass; 2 UI fixes included, visual re-check in #27) |
 | 8 Simulator walkthrough (#27) | todo (after all) |
 
 Hub rule: this table is regenerated from GitHub whenever a PR is merged.
