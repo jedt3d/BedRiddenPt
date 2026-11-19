@@ -396,10 +396,15 @@ class CareLevelBadge extends StatelessWidget {
               child: const SizedBox(width: AppSpace.s6, height: AppSpace.s6),
             ),
             const SizedBox(width: AppSpace.s4),
-            Text(
-              level.label,
-              style: AppText.footnoteEmphasized.copyWith(
-                color: style.badgeText,
+            // Shrinks with an ellipsis when its row is tight (large text).
+            Flexible(
+              child: Text(
+                level.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.footnoteEmphasized.copyWith(
+                  color: style.badgeText,
+                ),
               ),
             ),
           ],
