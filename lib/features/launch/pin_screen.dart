@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../app/app_scope.dart';
 import '../../app/routes.dart';
+import '../../data/patient_repository.dart';
 import '../../data/volunteer_store.dart';
 import '../../shared/patient_avatar.dart';
 import '../../theme/tokens.dart';
@@ -12,6 +13,11 @@ import '../../theme/tokens.dart';
 /// PIN entry, every launch (SPEC §7.1, Figma frames 02/04). The PIN is the
 /// constant [appPin]; the 6th digit checks it. Right: Home replaces the
 /// stack. Wrong: the dots shake and clear. No lockout.
+///
+/// The top-right ⋮ opens a [CupertinoActionSheet] with Reset sample data
+/// (SPEC §6, Figma 05/06). It works before the PIN (accepted risk) and keeps
+/// the volunteer's name: [PatientRepository.resetSampleData] only touches
+/// the database.
 class PinScreen extends StatefulWidget {
   const PinScreen({super.key});
 
@@ -64,6 +70,51 @@ class _PinScreenState extends State<PinScreen>
     if (mounted) setState(() => _entered = '');
   }
 
+  Future<void> _openMenu() async {
+    final reset = await showCupertinoModalPopup<bool>(
+      context: context,
+      builder: (sheet) => CupertinoActionSheet(
+        title: const Text('Sample data'),
+        message: const Text('Works before you log in. Your name is kept.'),
+        actions: [
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.pop(sheet, true),
+            child: const Text('Reset sample data'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(sheet, false),
+          child: const Text('Cancel'),
+        ),
+      ),
+    );
+    if (reset != true || !mounted) return;
+    final confirmed = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (alert) => CupertinoAlertDialog(
+        title: const Text('Reset sample data?'),
+        content: const Text(
+          'All patients on this phone will be replaced with $sampleSeedCount '
+          'random patients from the sample pool. Your name is kept.',
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(alert, false),
+            child: const Text('Cancel'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.pop(alert, true),
+            child: const Text('Reset'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await AppScope.read(context).patients.resetSampleData();
+  }
+
   @override
   Widget build(BuildContext context) {
     final name = AppScope.of(context).volunteer.name?.trim() ?? '';
@@ -87,6 +138,19 @@ class _PinScreenState extends State<PinScreen>
   Widget _body(String name, String firstName) {
     return Column(
       children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: CupertinoButton(
+            key: const ValueKey('pin-more'),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpace.s16),
+            onPressed: _openMenu,
+            child: const Icon(
+              CupertinoIcons.ellipsis_vertical,
+              semanticLabel: 'More',
+              color: AppColors.accent,
+            ),
+          ),
+        ),
         const Spacer(flex: 2),
         const SizedBox(height: AppSpace.s40),
         _Avatar(initials: initialsOf(name)),
