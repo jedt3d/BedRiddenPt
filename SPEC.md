@@ -45,7 +45,7 @@ in the iOS Simulator.
 | Database | **`sqflite` 2.4.6**, a local SQLite file | Device only, nothing sent to a server |
 | Location | `geolocator` 14.1.2 | `getCurrentPosition(locationSettings: LocationSettings(accuracy: best))`; `Position.accuracy` is metres |
 | Area | **Khlong San District (เขตคลองสาน), Bangkok**: OSM relation 3147280, ≈ 5.96 km², 4 subdistricts (§3) | Files in `assets/geo/`; source and attribution in `assets/geo/README.md` |
-| Map start view | Center **13.7228, 100.5023** (district centroid), zoom **14.5** | Verified in `spikes/map_geo/` on the iOS Simulator (iPhone 16 Pro, iOS 26.5) |
+| Map start view | Center **13.7228, 100.5023** (district centroid), zoom **14.5** as the start; the Map tab then **fits the whole district outline** in its map area (≈ zoom 14.3 on iPhone 16 Pro), as in Figma frame 14 | Spike verified 14.5 full-screen; the Map tab's map is shorter (legend below), so it fits to the outline (PR #63) |
 | Photo | `image_picker` 1.2.4 | Simulator has no camera → gallery |
 | Photo files | `path_provider` 2.1.6 | Picked photos are copied into the app documents folder; the database stores the path |
 | Call / navigate | `url_launcher` 6.3.3 | `tel:` and an Apple Maps URL |
