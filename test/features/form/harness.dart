@@ -110,8 +110,9 @@ Future<FormHarness> pumpFormHarness(
   int seed = 1,
   bool seedData = true,
 }) async {
+  // iPhone 16 size, so overflows at phone width fail the tests.
   tester.view.devicePixelRatio = 3;
-  tester.view.physicalSize = const Size(393 * 3, 1600 * 3);
+  tester.view.physicalSize = const Size(393 * 3, 852 * 3);
   addTearDown(tester.view.reset);
   formClock = () => DateTime(2026, 11, 20);
   addTearDown(() => formClock = DateTime.now);

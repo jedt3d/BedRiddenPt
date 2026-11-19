@@ -82,7 +82,9 @@ void main() {
     for (final label in ['National ID', 'Full name', 'Born (B.E.)']) {
       expect(textOf(tester, h, label), isEmpty, reason: label);
     }
+    await h.scrollTo(find.text('Required: tap Use my location'));
     expect(find.text('Required: tap Use my location'), findsOneWidget);
+    await h.scrollTo(find.text('Set by ADL score'));
     expect(find.text('Set by ADL score'), findsOneWidget);
   });
 }
