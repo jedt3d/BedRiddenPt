@@ -44,6 +44,12 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   FormDraft? _draft;
   bool _saving = false;
 
+  /// Whether Save was tapped once: from then on, errors show as you type.
+  bool _submitted = false;
+
+  /// The national ID the repository rejected as a duplicate on Save.
+  String? _duplicateId;
+
   /// The note at the top of Add (SPEC §6, §7.3); null for Edit.
   String? _banner;
 
@@ -84,11 +90,26 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
 
   void _changed() => setState(() {});
 
+  /// Field messages to show: none until the first Save, then live.
+  Map<DraftField, String> _errors() {
+    final draft = _draft;
+    if (draft == null || !_submitted) return const {};
+    final errors = draft.errors();
+    if (_duplicateId != null &&
+        _duplicateId == nationalIdDigits(draft.nationalId.text)) {
+      errors[DraftField.nationalId] ??= DuplicateNationalIdException.message;
+    }
+    return errors;
+  }
+
   Future<void> _save() async {
     final draft = _draft!;
+    FocusScope.of(context).unfocus();
+    setState(() => _submitted = true);
+    if (_errors().isNotEmpty) return;
     setState(() => _saving = true);
+    final patient = draft.toPatient();
     try {
-      final patient = draft.toPatient();
       final repo = _scope.patients;
       if (_isAdd) {
         await repo.insert(patient, registeredBy: _scope.volunteer.name ?? '');
@@ -96,6 +117,14 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
         await repo.update(patient);
       }
       if (mounted) Navigator.of(context).pop();
+    } on DuplicateNationalIdException {
+      // Shown under the National ID field; nothing was saved (SPEC §6).
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _duplicateId = patient.nationalId;
+        });
+      }
     } on Object catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -103,12 +132,11 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
         context: context,
         builder: (context) => CupertinoAlertDialog(
           title: const Text("Couldn't save"),
-          content: Text(switch (e) {
-            DuplicateNationalIdException() =>
-              DuplicateNationalIdException.message,
-            InvalidNationalIdException() => InvalidNationalIdException.message,
-            _ => '$e',
-          }),
+          content: Text(
+            e is InvalidNationalIdException
+                ? InvalidNationalIdException.message
+                : '$e',
+          ),
           actions: [
             CupertinoDialogAction(
               isDefaultAction: true,
@@ -124,7 +152,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   @override
   Widget build(BuildContext context) {
     final draft = _draft;
-    final canSave = draft != null && draft.isComplete && !_saving;
+    final canSave = draft != null && !_saving;
     return CupertinoPageScaffold(
       backgroundColor: AppColors.bgGrouped,
       navigationBar: CupertinoNavigationBar(
@@ -152,6 +180,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
                 draft: draft,
                 isAdd: _isAdd,
                 banner: _banner,
+                errors: _errors(),
                 onChanged: _changed,
               ),
       ),
@@ -164,12 +193,14 @@ class _FormBody extends StatelessWidget {
     required this.draft,
     required this.isAdd,
     required this.banner,
+    required this.errors,
     required this.onChanged,
   });
 
   final FormDraft draft;
   final bool isAdd;
   final String? banner;
+  final Map<DraftField, String> errors;
 
   /// Rebuild after a non-text value changed.
   final VoidCallback onChanged;
@@ -215,9 +246,13 @@ class _FormBody extends StatelessWidget {
             FieldRow(
               icon: CupertinoIcons.person_crop_rectangle,
               label: 'National ID',
+              error: errors[DraftField.nationalId],
               child: FieldText(
                 controller: d.nationalId,
                 placeholder: '13 digits',
+                color: errors.containsKey(DraftField.nationalId)
+                    ? AppColors.actionDestructive
+                    : AppColors.labelPrimary,
                 keyboardType: TextInputType.number,
                 inputFormatters: [ReformatInput(formatNationalId)],
               ),
@@ -225,6 +260,7 @@ class _FormBody extends StatelessWidget {
             FieldRow(
               icon: CupertinoIcons.person,
               label: 'Full name',
+              error: errors[DraftField.fullName],
               child: FieldText(
                 controller: d.fullName,
                 placeholder: 'Required',
@@ -234,6 +270,7 @@ class _FormBody extends StatelessWidget {
             FieldRow(
               icon: CupertinoIcons.person,
               label: 'Sex',
+              error: errors[DraftField.sex],
               child: Align(
                 alignment: Alignment.centerRight,
                 child: CupertinoSlidingSegmentedControl<Sex>(
@@ -249,6 +286,7 @@ class _FormBody extends StatelessWidget {
             FieldRow(
               icon: CupertinoIcons.calendar,
               label: 'Born (B.E.)',
+              error: errors[DraftField.born],
               child: Row(
                 children: [
                   Expanded(
@@ -283,6 +321,7 @@ class _FormBody extends StatelessWidget {
             FieldRow(
               icon: CupertinoIcons.map,
               label: 'Subdistrict',
+              error: errors[DraftField.subdistrict],
               child: PickerValue(
                 text: d.subdistrict == null
                     ? null
@@ -309,6 +348,7 @@ class _FormBody extends StatelessWidget {
             FieldRow(
               icon: CupertinoIcons.location,
               label: 'Coordinates',
+              error: errors[DraftField.coordinates],
               child: Text(
                 d.lat == null || d.lng == null
                     ? 'Required: tap Use my location'
@@ -330,6 +370,7 @@ class _FormBody extends StatelessWidget {
             FieldRow(
               icon: CupertinoIcons.person,
               label: 'Name',
+              error: errors[DraftField.contactName],
               child: FieldText(
                 controller: d.contactName,
                 placeholder: 'Required',
@@ -339,6 +380,7 @@ class _FormBody extends StatelessWidget {
             FieldRow(
               icon: CupertinoIcons.person_2,
               label: 'Relationship',
+              error: errors[DraftField.relation],
               child: PickerValue(
                 text: d.relation?.label,
                 onTap: () => _pick<ContactRelation>(
@@ -355,6 +397,9 @@ class _FormBody extends StatelessWidget {
               FieldRow(
                 icon: CupertinoIcons.phone,
                 label: 'Phone ${i + 1}',
+                error: i == d.phones.length - 1
+                    ? errors[DraftField.phones]
+                    : null,
                 child: FieldText(
                   controller: d.phones[i],
                   placeholder: '10 digits',
@@ -380,6 +425,7 @@ class _FormBody extends StatelessWidget {
             FieldRow(
               icon: CupertinoIcons.chart_bar,
               label: 'ADL score',
+              error: errors[DraftField.adlScore],
               child: Row(
                 children: [
                   Expanded(
@@ -421,6 +467,7 @@ class _FormBody extends StatelessWidget {
             FieldRow(
               icon: CupertinoIcons.plus_square,
               label: 'Main condition',
+              error: errors[DraftField.mainCondition],
               child: PickerValue(
                 text: d.mainCondition?.label,
                 onTap: () => _pick<MainCondition>(
@@ -436,6 +483,7 @@ class _FormBody extends StatelessWidget {
             FieldRow(
               icon: CupertinoIcons.house_alt,
               label: 'Living situation',
+              error: errors[DraftField.livingSituation],
               child: PickerValue(
                 text: d.livingSituation?.label,
                 onTap: () => _pick<LivingSituation>(
