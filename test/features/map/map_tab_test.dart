@@ -128,6 +128,19 @@ void main() {
     );
   });
 
+  testWidgets('the whole district outline fits in the map', (tester) async {
+    await pumpMap(tester);
+    await tester.pump(); // the fit lands on the frame after the outline
+    final camera = MapCamera.of(tester.element(find.byType(PolygonLayer)));
+    final district = tester
+        .widget<PolygonLayer>(find.byType(PolygonLayer))
+        .polygons
+        .singleWhere((p) => p.borderColor == AppColors.mapDistrict);
+    for (final point in district.points) {
+      expect(camera.visibleBounds.contains(point), isTrue, reason: '$point');
+    }
+  });
+
   testWidgets('shows the OSM attribution', (tester) async {
     await pumpMap(tester);
     expect(find.textContaining('© OpenStreetMap contributors'), findsOneWidget);
