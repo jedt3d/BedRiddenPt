@@ -25,12 +25,12 @@ The user adopted figma-proto's 15 design decisions plus: "Use my location" also 
 
 ## Build streams (started 2026-11-19, plan approved by the user)
 
-Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; reviews and merges PRs with `gh pr merge --squash --auto` after the Done-when check). Main session (`local_78971f4d-…`) reports to the user every 15 min while workers run. Workers: Opus 5.5 / medium, own worktree, one PR per issue. Expert (`local_08d17d04-48b6-4415-be2b-997a359bfb43`, plan mode, read-only; user switches it to Fable 5.2 / high) is consulted after 3 different failed attempts, or at once for Xcode/Pods/signing.
+Hub = `local_5da246be-abad-48fb-9bcf-aa582f9ab9b5` (sole writer of this file; reviews and merges PRs with `gh pr merge --squash --auto` after the Done-when check). Merge rule for stacked PRs: retarget the next PR to `main` before merging, merge commits, delete branches only at the end (`--delete-branch` on #29 closed #30/#32). Main session (`local_78971f4d-…`) reports to the user every 15 min while workers run. Workers: Opus 5.5 / medium, own worktree, one PR per issue. Expert (`local_08d17d04-48b6-4415-be2b-997a359bfb43`, plan mode, read-only; user switches it to Fable 5.2 / high) is consulted after 3 different failed attempts, or at once for Xcode/Pods/signing.
 
 | Stream | Issues | Session | State |
 |---|---|---|---|
-| A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | running: PRs #29–#36 open, stacked (#1 #2 #3 #28 #4 #6 #5 #7); hub verified stack tip: analyze clean, 35 tests pass, check_tokens OK. Waiting: ci.yml push to #32, #29 Simulator check, then the shell |
-| Expert review | #6 repository, #28 tokens, shell | expert | after A merges |
+| A Foundation | #1 #2 #3 #28 #4–#7 + app shell | `local_59b6642d-5dbc-4480-aa09-e71f477cecd2` | done. Merged: #29 (#1), #38 (#2 #3, replaces #30/#31). Open stack, CI green, waiting on the expert review: #39 (#28, replaces #32) ← #33 (#4) ← #34 (#6) ← #35 (#5) ← #36 (#7) ← #37 shell. Hub verified the stack tip (analyze, 38 tests, check_tokens) and the #29 Simulator screenshot |
+| Expert review | #6 repository, #28 tokens, shell | expert | requested |
 | B1 Launch | #8 #9 #10 | — | waits for review |
 | B2 List | #11–#14 | — | waits for review |
 | B3 Map | #15 #16 #18, then #17 after #19 | — | waits for review |
