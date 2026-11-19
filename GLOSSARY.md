@@ -26,6 +26,10 @@ _Avoid_: Dependency, level, ADL group, severity
 The 0–20 Barthel daily-living score that care level is derived from: bedridden 0–4, homebound 5–11, social 12–20.
 _Avoid_: Care score, health score
 
+**Care needs**:
+The equipment or nursing a patient relies on: bedsore care, feeding tube, catheter, oxygen, air mattress, wheelchair. A patient can have any number of them, or none.
+_Avoid_: Equipment, special needs, conditions
+
 ## Register
 
 **Registration**:

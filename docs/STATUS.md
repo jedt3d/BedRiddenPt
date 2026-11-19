@@ -8,7 +8,7 @@ Updated 2026-11-19 by the hub session. ✅ = checked on disk · ⚠️ = not con
 |---|---|---|---|
 | map-geo | Geo assets + map spike | ✅ `assets/geo/` (boundary 1, subdistricts 4, water 2, roads 386 ways / 206 distinct `name:en`); helpers in `spikes/map_geo/lib/geo/`; spike `flutter test` 5/5 pass (re-run by hub); spike's asset copies identical to `assets/`. Simulator run: screenshots in `spikes/map_geo/docs/`, not re-run | idle, reports to hub |
 | sample-data | 50-patient pool | ✅ `assets/bootstrap.json` 50 records, 25/25, ages 60–110 (4 aged 100+), 10/25/15 care levels, 43/3/2/2 status; `data/patients.csv` 50 rows; 50 avatars. Generator imports the spike's `lib/geo/` helpers (don't move them) | idle, reports to hub |
-| figma-proto | Figma frames for every screen | [Figma file](https://www.figma.com/design/zHNLIMNEn1XPcNwBTZGw7B), 25 frames, 67 links, updated to the fixed-PIN/name screen and swipe-restore (user-approved). 15 design decisions handed off for SPEC (notes: `figma-prototype.md`). ⚠️ Figma not opened by hub | done |
+| figma-proto | Figma frames for every screen | [Figma file](https://www.figma.com/design/zHNLIMNEn1XPcNwBTZGw7B), 25 frames, 67 links, updated to the fixed-PIN/name screen and swipe-restore (user-approved). 15 design decisions handed off for SPEC (notes: `figma-prototype.md`). Hub checked the frame list (25) and the texts of frames 07, 13, 16, 17, 22, 23, 25 against SPEC | done |
 
 Matt Pocock skills (`~/.claude/skills/`: to-tickets, triage, to-spec, wayfinder, grill-with-docs, handoff) are owned by the hub. No ADRs yet; candidates: "one registration, no visit history", "no delete, soft statuses".
 
@@ -21,7 +21,7 @@ Answered 2026-11-19 and written into `SPEC.md` (draft 3 change list, §2, §4, �
 
 ## Spec questions — all resolved 2026-11-19
 
-The user adopted figma-proto's 15 design decisions plus: "Use my location" also sets the subdistrict; moved patients can be swiped to Deceased; birth_year CHECK stays 1916–1966 (known limit, app checks age). Hub defaults, not asked: ⋮ = CupertinoActionSheet; bad checksum text "This national ID isn't valid."; `neighbour`/`other` unused in sample (no change). All in `SPEC.md` §5, §7 and the draft-3 change list.
+The user adopted figma-proto's 15 design decisions plus: "Use my location" also sets the subdistrict; moved patients can be swiped to Deceased; birth_year CHECK stays 1916–1966 (known limit, app checks age). Hub defaults, not asked: ⋮ = CupertinoActionSheet; bad checksum text "This national ID isn't valid. Check the 13 digits."; `neighbour`/`other` unused in sample (no change). All in `SPEC.md` §5, §7 and the draft-3 change list; GLOSSARY adds **Care needs**; 17 issues carry spec-update comments.
 
 ## Build plan (not started — needs user go-ahead)
 
