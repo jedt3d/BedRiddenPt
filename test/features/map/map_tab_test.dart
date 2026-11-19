@@ -7,8 +7,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:bedridden_pt/app/app_scope.dart';
+import 'package:bedridden_pt/app/routes.dart';
 import 'package:bedridden_pt/data/patient_repository.dart';
 import 'package:bedridden_pt/data/volunteer_store.dart';
+import 'package:bedridden_pt/features/detail/detail_screen.dart';
+import 'package:bedridden_pt/features/map/map_callout.dart';
 import 'package:bedridden_pt/features/map/map_pin.dart';
 import 'package:bedridden_pt/features/map/map_tab.dart';
 import 'package:bedridden_pt/shared/care_style.dart';
@@ -74,7 +77,10 @@ void main() {
         patients: repo,
         volunteer: volunteer,
         showInactive: showInactive,
-        child: const CupertinoApp(home: MapTab()),
+        child: const CupertinoApp(
+          home: MapTab(),
+          onGenerateRoute: Routes.onGenerateRoute,
+        ),
       ),
     );
     await settle(
@@ -144,7 +150,9 @@ void main() {
     final markers = tester.widget<MarkerLayer>(find.byType(MarkerLayer));
     for (final m in markers.markers) {
       final p = patients.singleWhere(
-        (p) => (m.child.key! as ValueKey).value == p.id,
+        (p) =>
+            ((m.child as GestureDetector).child!.key! as ValueKey).value ==
+            p.id,
       );
       expect(m.point.latitude, p.lat);
       expect(m.point.longitude, p.lng);
@@ -234,5 +242,55 @@ void main() {
     await tester.pump();
     expect(count('Grey: inactive'), '1');
     expect(pinsOf(AppColors.pinInactive), 1);
+  });
+
+  testWidgets('tap a pin, then its name: Detail for that patient', (
+    tester,
+  ) async {
+    await pumpMap(tester);
+    final patients = (await tester.runAsync(() => repo.list()))!;
+    expect(find.byType(MapCallout), findsNothing); // opens with no callout
+
+    /// A tap on the map away from the pins closes the callout.
+    Future<void> tapEmptyMap() async {
+      await tester.tapAt(
+        tester.getTopLeft(find.byType(FlutterMap)) + const Offset(5, 5),
+      );
+      // Past the map's double-tap window, so the tap counts as a tap.
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+
+    // Pins that overlap at the start zoom: only the top one takes the tap
+    // there, so test each pin that is on top at its centre.
+    final onTop = [
+      for (final p in patients)
+        if (find.byKey(ValueKey(p.id)).hitTestable().evaluate().isNotEmpty) p,
+    ];
+    expect(onTop.length, greaterThanOrEqualTo(3));
+    for (final p in onTop) {
+      await tapEmptyMap();
+      expect(find.byType(MapCallout), findsNothing);
+      await tester.tap(find.byKey(ValueKey(p.id)));
+      await tester.pump();
+      expect(find.byType(MapCallout), findsOneWidget);
+      expect(find.text(p.fullName), findsOneWidget);
+      expect(
+        find.text(MapCallout.summary(p, DateTime.now().year)),
+        findsOneWidget,
+      );
+    }
+
+    await tapEmptyMap();
+    expect(find.byType(MapCallout), findsNothing);
+
+    final target = onTop.last;
+    await tester.tap(find.byKey(ValueKey(target.id)));
+    await tester.pump();
+    await tester.tap(find.text(target.fullName));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<DetailScreen>(find.byType(DetailScreen)).patientId,
+      target.id,
+    );
   });
 }

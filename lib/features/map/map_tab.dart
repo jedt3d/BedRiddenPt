@@ -3,12 +3,14 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../app/app_scope.dart';
+import '../../app/routes.dart';
 import '../../data/patient.dart';
 import '../../data/patient_repository.dart';
 import '../../geo/random_points.dart';
 import '../../shared/care_style.dart';
 import '../../shared/map_config.dart';
 import '../../theme/tokens.dart';
+import 'map_callout.dart';
 import 'map_legend.dart';
 import 'map_pin.dart';
 
@@ -36,6 +38,14 @@ class _MapTabState extends State<MapTab> {
   /// Every patient, inactive included: read once per change, filtered in
   /// memory (the legend counts hidden patients too).
   List<Patient> _patients = const [];
+
+  /// The patient whose name callout is open. None when the map opens.
+  String? _selectedId;
+
+  // The callout's box above the pin: wide enough for a long name (the text
+  // ellipsizes), tall enough for two lines; empty space in it isn't hit.
+  static const _calloutWidth = 260.0;
+  static const _calloutHeight = 64.0;
 
   @override
   void didChangeDependencies() {
@@ -90,6 +100,8 @@ class _MapTabState extends State<MapTab> {
       for (final p in _patients)
         if (showInactive.value || !p.status.isInactive) p,
     ];
+    // A pin that was hidden (e.g. marked deceased) takes its callout with it.
+    final selected = visible.where((p) => p.id == _selectedId).firstOrNull;
     return CupertinoPageScaffold(
       backgroundColor: AppColors.bgGrouped,
       navigationBar: const CupertinoNavigationBar(middle: Text('Map')),
@@ -100,6 +112,7 @@ class _MapTabState extends State<MapTab> {
             child: DistrictMap(
               district: _district,
               subdistricts: _subdistricts,
+              onTap: () => setState(() => _selectedId = null),
               children: [
                 MarkerLayer(
                   markers: [
@@ -109,9 +122,32 @@ class _MapTabState extends State<MapTab> {
                         width: MapPin.size.width,
                         height: MapPin.size.height,
                         alignment: Alignment.topCenter,
-                        child: MapPin(
-                          key: ValueKey(p.id),
-                          color: CareStyle.pinColorFor(p),
+                        child: GestureDetector(
+                          onTap: () => setState(() => _selectedId = p.id),
+                          child: MapPin(
+                            key: ValueKey(p.id),
+                            color: CareStyle.pinColorFor(p),
+                          ),
+                        ),
+                      ),
+                    if (selected != null)
+                      Marker(
+                        point: LatLng(selected.lat, selected.lng),
+                        width: _calloutWidth,
+                        height:
+                            _calloutHeight + AppSpace.s7 + MapPin.size.height,
+                        alignment: Alignment.topCenter,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            MapCallout(
+                              patient: selected,
+                              onTap: () =>
+                                  Routes.openDetail(context, selected.id),
+                            ),
+                            const SizedBox(height: AppSpace.s7),
+                            SizedBox(height: MapPin.size.height),
+                          ],
                         ),
                       ),
                   ],
@@ -202,6 +238,7 @@ class DistrictMap extends StatelessWidget {
     required this.district,
     required this.subdistricts,
     this.children = const [],
+    this.onTap,
   });
 
   final List<LatLng> district;
@@ -209,6 +246,9 @@ class DistrictMap extends StatelessWidget {
 
   /// Layers drawn above the outlines (pins, callout).
   final List<Widget> children;
+
+  /// A tap on the map itself, not on a pin.
+  final VoidCallback? onTap;
 
   // Stroke widths from Figma frame 14 ("Khlong San district" vectors).
   static const _districtStroke = 3.0;
@@ -218,11 +258,12 @@ class DistrictMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FlutterMap(
-      options: const MapOptions(
+      options: MapOptions(
+        onTap: (_, _) => onTap?.call(),
         initialCenter: MapConfig.center,
         initialZoom: MapConfig.initialZoom,
         backgroundColor: AppColors.mapLand,
-        interactionOptions: InteractionOptions(
+        interactionOptions: const InteractionOptions(
           flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
         ),
       ),
