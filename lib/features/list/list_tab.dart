@@ -139,39 +139,46 @@ class _ListTabState extends State<ListTab> {
                 ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.only(
-                left: AppSpace.s16,
-                right: AppSpace.s16,
-                bottom: AppSpace.s30,
-              ),
-              sliver: SliverToBoxAdapter(
-                child: _rows.isEmpty
-                    ? Text(
-                        'No patients match.',
-                        textAlign: TextAlign.center,
-                        style: AppText.body.copyWith(
-                          color: AppColors.labelSecondary,
-                        ),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(AppRadius.card),
-                        child: Column(
-                          children: [
-                            for (final p in _rows)
-                              SwipeRow(
-                                patient: p,
-                                repository: _repo!,
-                                child: PatientRow(
-                                  key: ValueKey(p.id),
+            // The tab bar is translucent and overlaps the scroll view; its
+            // height is in MediaQuery's bottom padding, so keep the last
+            // row scrollable above it.
+            SliverSafeArea(
+              top: false,
+              sliver: SliverPadding(
+                padding: const EdgeInsets.only(
+                  left: AppSpace.s16,
+                  right: AppSpace.s16,
+                  bottom: AppSpace.s30,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: _rows.isEmpty
+                      ? Text(
+                          'No patients match.',
+                          textAlign: TextAlign.center,
+                          style: AppText.body.copyWith(
+                            color: AppColors.labelSecondary,
+                          ),
+                        )
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(AppRadius.card),
+                          child: Column(
+                            children: [
+                              for (final p in _rows)
+                                SwipeRow(
                                   patient: p,
-                                  currentYear: year,
-                                  onTap: () => Routes.openDetail(context, p.id),
+                                  repository: _repo!,
+                                  child: PatientRow(
+                                    key: ValueKey(p.id),
+                                    patient: p,
+                                    currentYear: year,
+                                    onTap: () =>
+                                        Routes.openDetail(context, p.id),
+                                  ),
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
+                ),
               ),
             ),
           ],
